@@ -32,6 +32,24 @@
             "problemMatcher": []
         },
         {
+            "label": "gauntlet: ui-sandbox",
+            "type": "shell",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Gate ui-sandbox -Iteration ${input:iteration}",
+            "problemMatcher": []
+        },
+        {
+            "label": "gauntlet: all gates (no UI)",
+            "type": "shell",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Gate all -Iteration ${input:iteration} -NoUi",
+            "problemMatcher": []
+        },
+        {
+            "label": "shop: sandbox probe",
+            "type": "shell",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\tools\\sandbox-probe.ps1",
+            "problemMatcher": []
+        },
+        {
             "label": "gauntlet: rollback to last green",
             "type": "shell",
             "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Rollback",

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>ShopTest.UiRunner</RootNamespace>
+        <AssemblyName>ShopTest.UiRunner</AssemblyName>
+        <UseWPF>true</UseWPF>
+        <IsPackable>false</IsPackable>
+        <!-- DllImport is intentional for the small user32 surface; the LibraryImport suggestion is
+        noise here. -->
+        <NoWarn>$(NoWarn);SYSLIB1054</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\ShopTest.Core\ShopTest.Core.csproj" />
+    </ItemGroup>
+</Project>

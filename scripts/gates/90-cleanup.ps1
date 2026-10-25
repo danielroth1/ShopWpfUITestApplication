@@ -9,9 +9,11 @@ function Invoke-GateCleanup {
         $stopped++
     }
 
+    $sandboxes = Stop-ShopSandbox
+
     if ($Context.StopContainer) {
         Stop-ShopContainer -Context $Context
     }
 
-    return ("stopped {0} app process(es); database container stopped: {1}" -f $stopped, $Context.StopContainer)
+    return ("stopped {0} app process(es) and {1} sandbox process(es); database container stopped: {2}" -f $stopped, $sandboxes, $Context.StopContainer)
 }

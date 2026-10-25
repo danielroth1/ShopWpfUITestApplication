@@ -2,7 +2,7 @@
 
 A test shop application: one .NET 10 WPF process (UI + domain + data access) over PostgreSQL in a
 throwaway Podman container, verified by an in-process UI test suite, a self-checking gauntlet loop and
-Windows-MCP UI scenarios.
+full UI scenarios replayed inside Windows Sandbox (Windows-MCP remains available for interactive triage).
 
 ## What works today
 
@@ -20,7 +20,9 @@ Windows-MCP UI scenarios.
 - .NET 10 SDK installed system-wide: `dotnet --version` must report `10.x` (`global.json` pins
   `10.0.402` with `latestFeature`). No custom `DOTNET_ROOT` or PATH workaround is needed.
 - Podman (machine `podman-machine-default`)
-- Python 3.14+ with `windows-mcp` for UI automation (`scripts\setup-mcp.ps1`)
+- Windows Pro/Enterprise/Education with the Windows Sandbox feature enabled for the `ui-sandbox` gate
+  (`Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All`, then reboot)
+- Python 3.14+ with `windows-mcp` for interactive UI automation (`scripts\setup-mcp.ps1`)
 - VS Code with Copilot and the C# extension (C# Dev Kit additionally enables the test debug configuration)
 
 ## Quick start
@@ -85,7 +87,8 @@ Sign in with `admin@shop.local` / `Admin123!` (admin) or `client@shop.local` / `
 - Runner: `scripts\gauntlet.ps1` (gates + JSON report in `artifacts\gauntlet\iter-<n>\report.json`).
 - Agent protocol: `.github/agents/gauntlet.agent.md`, invoked with `/gauntlet`.
 - UI scenarios: `ui-tests/scenarios/*.json`, schema in `ui-tests/schema/scenario.schema.json`.
-- Details and troubleshooting: `docs/gauntlet.md`.
+- UI executor: `tests\ShopTest.UiRunner` inside Windows Sandbox (`-Gate ui-sandbox`), so the desktop stays usable.
+- Details and troubleshooting: `docs/gauntlet.md`, `docs/sandbox-ui-tests.md`.
 
 The loop is: deterministic gates -> fix -> UI scenario replay -> green or stop after 3 iterations.
 
@@ -108,14 +111,13 @@ dotnet test tests\ShopTest.UiTests
 
 That is the cheapest answer to "did my change break the UI?", so reach for it before the gauntlet or
 Windows-MCP.
-
-| Test                            | What it proves                                                                                                                        |
+| Test | What it proves |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `AutomationIdContractTests`     | every authored interactive control across 10 screens (the 9 views plus the `MainWindow` shell) has a non-empty, unique `AutomationId` |
-| `DataTemplateAutomationIdTests` | ids that only exist once an item template materializes (`cart.line.{id}.remove`, `order.{id}.cancel`, ...) are unique per item        |
-| `LoginViewInteractionTests`     | an automation-peer click reaches the command, updates the view model and re-renders the binding; and that no window is ever shown     |
-| `CartViewInteractionTests`      | a peer click on `cart.continue` reaches the command and navigates - the worked example below, kept compiling                          |
-| `StartupWiringTests`            | the real DI container resolves every view model and `MainWindow`, so a missing registration fails here instead of on a user's click   |
+| `AutomationIdContractTests` | every authored interactive control across 10 screens (the 9 views plus the `MainWindow` shell) has a non-empty, unique `AutomationId` |
+| `DataTemplateAutomationIdTests` | ids that only exist once an item template materializes (`cart.line.{id}.remove`, `order.{id}.cancel`, ...) are unique per item |
+| `LoginViewInteractionTests` | an automation-peer click reaches the command, updates the view model and re-renders the binding; and that no window is ever shown |
+| `CartViewInteractionTests` | a peer click on `cart.continue` reaches the command and navigates - the worked example below, kept compiling |
+| `StartupWiringTests` | the real DI container resolves every view model and `MainWindow`, so a missing registration fails here instead of on a user's click |
 
 ### How it works
 

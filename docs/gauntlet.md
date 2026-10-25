@@ -1,20 +1,27 @@
 # Gauntlet loop
 
-The gauntlet is a deterministic gate runner plus an agent-driven UI verification pass. The script owns
-everything that can be checked mechanically; the agent owns everything that needs eyes on the UI.
+The gauntlet is a deterministic gate runner. Everything that can be checked mechanically runs from the
+script, including the UI scenario replay, which executes inside Windows Sandbox. The agent adds the loop,
+the fixes and the interactive triage that a script cannot do.
 
 ## Gates
 
-| Gate        | Script                           | What it proves                                                                                                                                   |
-| ----------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `preflight` | `scripts\gates\00-preflight.ps1` | .NET 10 SDK, `dotnet-ef`, Podman machine, Python 3.15, Windows-MCP installed, MCP endpoint answers an `initialize` request with the bearer token |
-| `build`     | `scripts\gates\10-build.ps1`     | `dotnet build ShopTest.slnx -warnaserror` succeeds                                                                                               |
-| `database`  | `scripts\gates\20-database.ps1`  | container recreated, `pg_isready`, `dotnet ef database update`                                                                                   |
-| `tests`     | `scripts\gates\30-tests.ps1`     | xUnit integration tests against the real container                                                                                               |
-| `cleanup`   | `scripts\gates\90-cleanup.ps1`   | app processes stopped; the database container stays running so the UI pass can use it (stop it with `-StopContainer`)                            |
+| Gate         | Script                            | What it proves                                                                                                                                   |
+| ------------ | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `preflight`  | `scripts\gates\00-preflight.ps1`  | .NET 10 SDK, `dotnet-ef`, Podman machine, Python 3.15, Windows-MCP installed, MCP endpoint answers an `initialize` request with the bearer token |
+| `build`      | `scripts\gates\10-build.ps1`      | `dotnet build ShopTest.slnx -warnaserror` succeeds                                                                                               |
+| `database`   | `scripts\gates\20-database.ps1`   | container recreated, `pg_isready`, `dotnet ef database update`                                                                                   |
+| `tests`      | `scripts\gates\30-tests.ps1`      | xUnit integration tests against the real container                                                                                               |
+| `ui-sandbox` | `scripts\gates\40-ui-sandbox.ps1` | scenarios replayed by `ShopTest.UiRunner` inside Windows Sandbox: app booted, UIA steps, SQL assertions, evidence copied out                     |
+| `cleanup`    | `scripts\gates\90-cleanup.ps1`    | app and sandbox processes stopped; the database container stays running so the UI pass can use it (stop it with `-StopContainer`)                |
 
-UI gates (G4 discovery, G5 scenario replay) are executed by the agent using Windows-MCP and write their
-evidence under `artifacts/gauntlet/iter-<n>/ui/`.
+`ui-sandbox` recreates the database first (`Reset-ShopContainer`), so the scenarios see freshly seeded data
+exactly as they do after `-Gate all`. The guest never touches the host desktop: it has its own display and
+input stack, the payload is mapped read-only and the results folder is the only writable share. See
+[UI tests in Windows Sandbox](sandbox-ui-tests.md).
+
+Windows-MCP remains available for interactive exploration and for triaging a failure that the evidence does
+not explain; it is no longer part of the automated UI gate.
 
 ## Running
 
@@ -28,21 +35,29 @@ Single gate, keeping the container for UI work:
 scripts\gauntlet.ps1 -Gate tests -KeepContainer
 ```
 
+UI gate only:
+
+```powershell
+scripts\gauntlet.ps1 -Gate ui-sandbox -Iteration 4
+```
+
 Parameters:
 
-- `-Gate all|preflight|build|database|tests|cleanup`
+- `-Gate all|preflight|build|database|tests|ui-sandbox|cleanup`
 - `-Iteration <n>` - selects `artifacts\gauntlet\iter-<n>` and the checkpoint tags
 - `-KeepContainer` - reuse the running `shop-pg` container instead of recreating it (database gate)
 - `-StopContainer` - stop `shop-pg` during cleanup; by default it stays up for the UI pass
+- `-NoUi` - skip the `ui-sandbox` gate inside `-Gate all` (use while Windows Sandbox is not enabled)
 - `-NoCommit` - skip the baseline/result commits and tags (explicit opt-out)
 - `-Rollback` - discard the working tree and return to the last `gauntlet/iter-*-green` tag
 - `-RollbackTo <ref>` - return to a specific tag or commit
 
 Exit code is `0` only when every executed gate passed. The JSON report at
-`artifacts\gauntlet\iter-<n>\report.json` is the machine-readable source of truth.
+`artifacts\gauntlet\iter-<n>\report.json` is the machine-readable source of truth; the UI gate also records
+its scenario evidence under `artifacts\gauntlet\iter-<n>\ui-sandbox\`.
 
-After `-Gate all` the database container is still running with freshly seeded data, so the agent can
-launch the app and replay the UI scenarios immediately. Pass `-StopContainer` when you are done.
+After `-Gate all` the database container is still running with freshly seeded data, so a manual app run or an
+interactive MCP pass can start immediately. Pass `-StopContainer` when you are done.
 
 ## Report shape
 
@@ -119,15 +134,18 @@ the first setup so the extension host inherits the variable.
 
 ## Troubleshooting
 
-| Symptom                                                   | Fix                                                                                                                                       |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `preflight` says MCP did not accept an initialize request | `schtasks /run /tn windows-mcp-server`, then check `%USERPROFILE%\.windows-mcp\server.error.log`                                          |
-| `401 Unauthorized` from the endpoint                      | The token in `WINDOWS_MCP_AUTH_KEY` no longer matches `config.toml`; rerun `scripts\setup-mcp.ps1`, restart VS Code                       |
-| Podman not reachable                                      | `podman machine start`; the preflight does this once and waits up to 120s                                                                 |
-| Port 55432 already in use                                 | Change `SHOP_DB_PORT` in `.env`, or stop the conflicting container                                                                        |
-| UI automation stalls while you use the mouse              | Windows-MCP holds a desktop lease; run the loop when idle, or set `[control] enabled = false` in `%USERPROFILE%\.windows-mcp\config.toml` |
-| First `windows-mcp` run is slow                           | Dependency install; subsequent starts are fast                                                                                            |
-| `comtypes` FutureWarning on Python 3.15                   | Harmless today; if UIA breaks, install Python 3.14 and rerun `setup-mcp.ps1 -Python <path>`                                               |
+| Symptom                                                   | Fix                                                                                                                                                               |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `preflight` says MCP did not accept an initialize request | `schtasks /run /tn windows-mcp-server`, then check `%USERPROFILE%\.windows-mcp\server.error.log`                                                                  |
+| `401 Unauthorized` from the endpoint                      | The token in `WINDOWS_MCP_AUTH_KEY` no longer matches `config.toml`; rerun `scripts\setup-mcp.ps1`, restart VS Code                                               |
+| Podman not reachable                                      | `podman machine start`; the preflight does this once and waits up to 120s                                                                                         |
+| Port 55432 already in use                                 | Change `SHOP_DB_PORT` in `.env`, or stop the conflicting container                                                                                                |
+| UI automation stalls while you use the mouse              | Windows-MCP holds a desktop lease; run the loop when idle, or set `[control] enabled = false` in `%USERPROFILE%\.windows-mcp\config.toml`                         |
+| First `windows-mcp` run is slow                           | Dependency install; subsequent starts are fast                                                                                                                    |
+| `comtypes` FutureWarning on Python 3.15                   | Harmless today; if UIA breaks, install Python 3.14 and rerun `setup-mcp.ps1 -Python <path>`                                                                       |
+| `ui-sandbox` says Windows Sandbox is not available        | Enable the optional feature and reboot: `Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All`; until then run `-Gate all -NoUi` |
+| `ui-sandbox` asks for the database bridge                 | The shell is not elevated; run the two `netsh`/`New-NetFirewallRule` commands it prints once. Details in `docs/sandbox-ui-tests.md`                               |
+| Every scenario fails at `waitFor` after a click           | Scenario fidelity, not the app: check the UIA dump next to the failing step before changing the app                                                               |
 
 ## Local UI sanity tools
 

@@ -1,12 +1,12 @@
 ---
-description: "Self-verifying gauntlet loop for the ShopTest WPF storefront: build, database, integration tests, then Windows-MCP UI scenarios, repeating until green (max 3 iterations)."
+description: "Self-verifying gauntlet loop for the ShopTest WPF storefront: build, database, integration tests, then UI scenarios replayed inside Windows Sandbox, repeating until green (max 3 iterations)."
 ---
 
 # Gauntlet agent
 
 You operate a closed verification loop for a .NET 10 WPF shop monolith backed by PostgreSQL in Podman.
 You are not a code generator that hopes for the best: every claim you make must be backed by a gate
-result or a UI assertion captured through Windows-MCP.
+result - including the sandbox UI gate - or by an assertion you captured and can point at.
 
 ## Mission
 
@@ -36,22 +36,23 @@ For each iteration `n` in 1..3:
    - start the next iteration.
      Never run UI gates when `build` or `tests` are red.
 
-3. When all deterministic gates pass, run the UI gates yourself:
-   - G4 UI discovery: launch the app, take a `Snapshot`, and refresh `docs/ui-map.md` with the screens
-     and AutomationIds you actually observe.
-   - G5 UI scenarios: replay every file in `ui-tests/scenarios/*.json` (except `00-notepad-smoke.json`
-     once the shop itself is being verified; run it only when the loop infrastructure changed).
-     Record evidence and results as described below.
-4. If every scenario passes, the iteration is green: stop and report success.
-5. If scenarios fail, classify (app not launching / element missing / wrong state / wrong persisted data),
+3. The UI gate is part of `-Gate all`: `ui-sandbox` replays every file in `ui-tests/scenarios/*.json`
+   (except `00-notepad-smoke.json`) through `ShopTest.UiRunner` inside Windows Sandbox. Read
+   `artifacts/gauntlet/iter-<n>/ui-sandbox/summary.json` and each scenario's `results.json`.
+   If Windows Sandbox is not enabled, the gate fails with the exact enable command: report that once and
+   run the deterministic gates with `-NoUi` until the feature is enabled.
+4. Use Windows-MCP only when a failure needs eyes: G4 discovery (launch the app, take a `Snapshot`, refresh
+   `docs/ui-map.md`) and triage of an element or state the evidence does not explain.
+5. If every scenario passes, the iteration is green: stop and report success.
+6. If scenarios fail, classify (app not launching / element missing / wrong state / wrong persisted data),
    fix the cause, and start the next iteration with a fresh database (the `all` gate set recreates it).
 
 Stop conditions:
 
 - All gates + all scenarios pass.
 - 3 iterations used without success: write the failure report and stop.
-- Preflight cannot be satisfied (missing tool, MCP unreachable): stop immediately and report the exact
-  remediation step from `docs/gauntlet.md`.
+- Preflight cannot be satisfied (missing tool), the database cannot start, or the sandbox gate reports the
+  feature as disabled: stop and report the exact remediation step from `docs/gauntlet.md`.
 
 ## Version control
 
@@ -70,9 +71,10 @@ Stop conditions:
 - Never weaken, delete, or rewrite a scenario assertion, a seed expectation, or a test to make a run pass.
   If the requirement genuinely changed, change the requirement explicitly in the report first.
 - Never skip a gate. Never mark a gate green from memory; re-run it.
-- No `Start-Sleep`-style arbitrary waits in scenario execution: use the `WaitFor` MCP tool or poll a
-  `Snapshot` until the expected element appears.
-- Every scenario step needs evidence: write the snapshot text and a screenshot under
+- No `Start-Sleep`-style arbitrary waits when driving Windows-MCP: use the `WaitFor` tool or poll a
+  `Snapshot` until the expected element appears. The scripted runner owns its own polling.
+- The runner writes the evidence; do not hand-write a `results.json`. When you replay a scenario manually
+  through MCP, still write its snapshot text and screenshots under
   `artifacts/gauntlet/iter-<n>/ui/<scenario>-<runId>/`.
 - Always kill the app process when a scenario ends. The database container stays running after
   `-Gate all` so the UI pass can use it; stop it with `-StopContainer` once the loop is finished.
@@ -94,7 +96,8 @@ Stop conditions:
 Scenarios live in `ui-tests/scenarios/*.json` and follow `ui-tests/schema/scenario.schema.json`.
 Placeholders substituted at run time:
 
-- `{{runId}}` — unique id for this iteration run, e.g. `20261025-161500`.
+- `{{runId}}` — unique id for this iteration run, e.g. `20261025-161500`. The runner derives one per
+  scenario (`<run-id>-s01`), so scenarios in the same iteration cannot collide.
 - `{{run.email}}` — `gauntlet+{{runId}}@shop.local`.
 - `{{run.name}}` — `Gauntlet {{runId}}`.
 
@@ -116,11 +119,12 @@ Result file per scenario (`results.json`):
 }
 ```
 
-`sqlAssert` steps run through Podman, for example:
+`sqlAssert` steps run through Npgsql inside the runner using the app's connection string, formatted the way
+`psql -tA` prints scalars (`t`/`f`), and poll until the step timeout. A manual MCP replay can instead use:
 
 `podman exec shop-pg psql -U shop -d shop -tAc "<query>"`
 
-Compare the trimmed stdout with `expect`. A mismatch fails the scenario with the observed value.
+Compare the trimmed value with `expect`. A mismatch fails the scenario with the observed value.
 
 ## Failure classification
 

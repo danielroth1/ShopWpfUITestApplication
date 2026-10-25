@@ -5,11 +5,19 @@
 
 .DESCRIPTION
     Runs the machine-checkable gates and writes a per-iteration report to
-    artifacts\gauntlet\iter-<n>\report.json. UI gates (app launch, scenario replay)
-    are executed by the gauntlet agent through Windows-MCP, not by this script.
+    artifacts\gauntlet\iter-<n>\report.json. The ui-sandbox gate replays the UI scenarios inside
+    Windows Sandbox and records its own evidence under artifacts\gauntlet\iter-<n>\ui-sandbox\;
+    Windows-MCP remains for interactive exploration and triage.
 
 .EXAMPLE
     .\scripts\gauntlet.ps1 -Gate all -Iteration 1
+
+.EXAMPLE
+    .\scripts\gauntlet.ps1 -Gate all -Iteration 1 -NoUi
+    Runs the deterministic gates only (Windows Sandbox not enabled yet).
+
+.EXAMPLE
+    .\scripts\gauntlet.ps1 -Gate ui-sandbox -Iteration 1
 
 .EXAMPLE
     .\scripts\gauntlet.ps1 -Gate tests -KeepContainer
@@ -20,7 +28,7 @@
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('all', 'preflight', 'build', 'database', 'tests', 'cleanup')]
+    [ValidateSet('all', 'preflight', 'build', 'database', 'tests', 'ui-sandbox', 'cleanup')]
     [string]$Gate = 'all',
 
     [int]$Iteration = 1,
@@ -30,6 +38,9 @@ param(
     [switch]$StopContainer,
 
     [switch]$NoCommit,
+
+    # Skips the sandbox UI gate; use while Windows Sandbox is not enabled on the machine.
+    [switch]$NoUi,
 
     [switch]$Rollback,
 
@@ -44,11 +55,13 @@ $repoRoot = Split-Path -Parent $scriptRoot
 
 . (Join-Path $scriptRoot 'lib\common.ps1')
 . (Join-Path $scriptRoot 'lib\podman.ps1')
+. (Join-Path $scriptRoot 'lib\sandbox.ps1')
 . (Join-Path $scriptRoot 'lib\git.ps1')
 . (Join-Path $scriptRoot 'gates\00-preflight.ps1')
 . (Join-Path $scriptRoot 'gates\10-build.ps1')
 . (Join-Path $scriptRoot 'gates\20-database.ps1')
 . (Join-Path $scriptRoot 'gates\30-tests.ps1')
+. (Join-Path $scriptRoot 'gates\40-ui-sandbox.ps1')
 . (Join-Path $scriptRoot 'gates\90-cleanup.ps1')
 
 Import-DotEnv (Join-Path $repoRoot '.env')
@@ -122,6 +135,11 @@ $allGates = @(
         Action = { param($ctx) Invoke-GateTests -Context $ctx }
     },
     [pscustomobject]@{
+        Id     = 'ui-sandbox'
+        Title  = 'Replay UI scenarios inside Windows Sandbox'
+        Action = { param($ctx) Invoke-GateUiSandbox -Context $ctx }
+    },
+    [pscustomobject]@{
         Id     = 'cleanup'
         Title  = 'Stop app processes and container'
         Action = { param($ctx) Invoke-GateCleanup -Context $ctx }
@@ -129,7 +147,7 @@ $allGates = @(
 )
 
 if ($Gate -eq 'all') {
-    $plan = $allGates
+    $plan = $allGates | Where-Object { -not ($NoUi -and $_.Id -eq 'ui-sandbox') }
 }
 else {
     $plan = $allGates | Where-Object { $_.Id -eq $Gate }
@@ -185,7 +203,8 @@ $passed = Save-GauntletReport -Context $context -StartedAt $startedAt
 
 if ($Gate -ne 'cleanup') {
     Write-Host ''
-    Write-Host 'UI gates (app launch + scenario replay) are executed by the gauntlet agent through Windows-MCP.' -ForegroundColor DarkGray
+    Write-Host 'UI gate: -Gate ui-sandbox replays ui-tests/scenarios inside Windows Sandbox (no desktop lease).' -ForegroundColor DarkGray
+    Write-Host 'Windows-MCP stays available for interactive exploration and failure triage.' -ForegroundColor DarkGray
 }
 
 if (-not $passed) {

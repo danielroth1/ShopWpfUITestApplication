@@ -10,8 +10,11 @@ running in a throwaway Podman container. There is no separate backend and no HTT
 - `src/ShopTest.Core` - entities, EF Core `ShopDbContext`, migrations, services, PBKDF2 hashing, seeding.
 - `src/ShopTest.App` - WPF shell, MVVM (`CommunityToolkit.Mvvm`), dependency injection via `Microsoft.Extensions.Hosting`.
 - `tests/ShopTest.IntegrationTests` - xUnit tests against the real PostgreSQL container.
+- `tests/ShopTest.UiTests` - in-process WPF harness (no window, no database).
+- `tests/ShopTest.UiRunner` - out-of-process scenario replay (UI Automation) for the host or Windows Sandbox.
 - `scripts` - gauntlet runner, per-gate scripts, Podman and MCP helpers.
-- `ui-tests` - declarative Windows-MCP scenarios and their JSON schema.
+- `ui-tests` - declarative scenarios (shared by the runner and Windows-MCP) and their JSON schema.
+- `docs/sandbox-ui-tests.md` - the sandbox UI lane: payload, bridge, evidence, troubleshooting.
 - `.github/agents/gauntlet.agent.md` - the self-verifying loop protocol.
 
 ## Conventions
@@ -29,18 +32,21 @@ running in a throwaway Podman container. There is no separate backend and no HTT
 ## Verifying UI changes (optional)
 
 Windows-MCP tools (`Snapshot`, `Click`, `Type`, `WaitFor`, `App`) are attached and can drive the running
-app through the accessibility tree. They are optional: reach for them when a change's outcome can only be
-confirmed by looking at or interacting with the real UI, and skip them when a cheaper check answers the
-same question.
+app through the accessibility tree. They are optional and they hold a desktop lease, so prefer the sandbox
+gate or a probe when either can settle the question.
 
 Cheapest check that answers the question wins:
 
 1. `dotnet build` and `scripts\gauntlet.ps1 -Gate tests` - logic, services, persistence.
 2. `dotnet test tests\ShopTest.UiTests` - real XAML, bindings and DI wiring; no window, no database, ~1 s.
    This is the cheapest UI check and it covers the AutomationId contract on every screen.
-3. `scripts\tools\ui-probe.ps1` (app running) - which AutomationIds exist on the current screen.
-4. `scripts\tools\ui-login-smoke.ps1 -AddItemToCart` - sign-in plus catalog/cart smoke.
-5. Windows-MCP - state a probe cannot see: navigation, enabled/disabled, error text, totals, order status.
+3. `scripts\gauntlet.ps1 -Gate ui-sandbox` - all eight scenarios against the real app and database, run
+   inside Windows Sandbox, so the host desktop stays usable (~3 min).
+   Same runner on the host (takes over input while it runs):
+   `tests\ShopTest.UiRunner\bin\Debug\net10.0-windows\ShopTest.UiRunner.exe --scenarios ui-tests\scenarios --out artifacts\gauntlet\iter-ui-runner --skip 00-notepad-smoke`
+4. `scripts\tools\ui-probe.ps1` (app running) - which AutomationIds exist on the current screen.
+5. `scripts\tools\ui-login-smoke.ps1 -AddItemToCart` - sign-in plus catalog/cart smoke.
+6. Windows-MCP - state a probe cannot see: navigation, enabled/disabled, error text, totals, order status.
 
 MCP is slow (seconds per step) and holds a desktop lease, so prefer a probe or a test when either can
 settle it, and don't replay a whole scenario to check one element.
@@ -53,6 +59,9 @@ never report a user-visible change as working without one.
 ## Commands
 
 - Full gate run: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\gauntlet.ps1 -Gate all -Iteration 1`
+- Deterministic gates only (Windows Sandbox not enabled): same command with `-NoUi`
+- Sandbox UI gate only: `scripts\gauntlet.ps1 -Gate ui-sandbox -Iteration 1`
+- Rebuild the sandbox payload: `scripts\tools\publish-sandbox-payload.ps1 -Force`
 - Build only: `scripts\gauntlet.ps1 -Gate build`
 - Clean bin/obj after an interrupted build (WPF `BG1002` .baml errors): `scripts\tools\shop-clean.ps1`
 - Start/stop the database container (no gauntlet): `scripts\tools\shop-db.ps1 -Action start|stop`
