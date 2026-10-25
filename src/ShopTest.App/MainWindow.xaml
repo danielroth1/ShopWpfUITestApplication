@@ -21,44 +21,48 @@
                     BorderThickness="0,0,0,1">
                 <Grid Margin="24,10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
                         <TextBlock Text="ShopTest"
                                    FontSize="20"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource Brush.Ink}" />
+                                   Foreground="{StaticResource Brush.Ink}"/>
                         <TextBlock Text="  ·  test storefront"
                                    Style="{StaticResource Muted}"
-                                   VerticalAlignment="Center" />
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
                         <TextBlock Text="{Binding UserLabel}"
                                    Style="{StaticResource Muted}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,16,0"
-                                   AutomationProperties.AutomationId="shell.userLabel" />
+                                   AutomationProperties.AutomationId="shell.userLabel"/>
                         <Button Content="{Binding CartButtonText}"
                                 Command="{Binding OpenCartCommand}"
                                 Style="{StaticResource SecondaryButton}"
                                 Margin="0,0,8,0"
                                 Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"
-                                AutomationProperties.AutomationId="shell.cartButton" />
+                                AutomationProperties.AutomationId="shell.cartButton"/>
                         <Button Content="☰"
                                 Command="{Binding ToggleBurgerCommand}"
                                 Style="{StaticResource IconButton}"
                                 Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"
                                 AutomationProperties.AutomationId="shell.burgerButton"
-                                AutomationProperties.Name="Open menu" />
+                                AutomationProperties.Name="Open menu"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <ContentControl Content="{Binding CurrentViewModel}" />
+            <ContentControl Content="{Binding CurrentViewModel}"/>
         </DockPanel>
 
         <Border Background="#33000000"
@@ -71,36 +75,38 @@
                     BorderThickness="1,0,0,0"
                     AutomationProperties.AutomationId="burger.panel">
                 <StackPanel Margin="16">
-                    <TextBlock Text="Menu" Style="{StaticResource Heading}" Margin="0,0,0,12" />
+                    <TextBlock Text="Menu"
+                            Style="{StaticResource Heading}"
+                            Margin="0,0,0,12"/>
 
                     <Button Content="Account settings"
                             Command="{Binding OpenAccountCommand}"
                             Style="{StaticResource MenuButton}"
-                            AutomationProperties.AutomationId="burger.account" />
+                            AutomationProperties.AutomationId="burger.account"/>
                     <Button Content="Order history"
                             Command="{Binding OpenOrdersCommand}"
                             Style="{StaticResource MenuButton}"
-                            AutomationProperties.AutomationId="burger.orders" />
+                            AutomationProperties.AutomationId="burger.orders"/>
                     <Button Content="Saved items"
                             Command="{Binding OpenSavedCommand}"
                             Style="{StaticResource MenuButton}"
-                            AutomationProperties.AutomationId="burger.saved" />
+                            AutomationProperties.AutomationId="burger.saved"/>
                     <Button Content="Admin panel"
                             Command="{Binding OpenAdminCommand}"
                             Style="{StaticResource MenuButton}"
                             Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"
-                            AutomationProperties.AutomationId="burger.admin" />
+                            AutomationProperties.AutomationId="burger.admin"/>
 
-                    <Separator Margin="0,12" />
+                    <Separator Margin="0,12"/>
 
                     <Button Content="Continue shopping"
                             Command="{Binding OpenCatalogCommand}"
                             Style="{StaticResource MenuButton}"
-                            AutomationProperties.AutomationId="burger.catalog" />
+                            AutomationProperties.AutomationId="burger.catalog"/>
                     <Button Content="Sign out"
                             Command="{Binding SignOutCommand}"
                             Style="{StaticResource MenuButton}"
-                            AutomationProperties.AutomationId="burger.signOut" />
+                            AutomationProperties.AutomationId="burger.signOut"/>
                 </StackPanel>
             </Border>
         </Border>

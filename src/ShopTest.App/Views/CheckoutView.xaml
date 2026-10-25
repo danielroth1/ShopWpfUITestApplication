@@ -3,50 +3,62 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="340" />
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="340"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,0" VerticalAlignment="Top">
+        <Border Grid.Column="0"
+                Style="{StaticResource Card}"
+                Margin="0,0,16,0"
+                VerticalAlignment="Top">
             <StackPanel>
-                <TextBlock Text="Checkout" Style="{StaticResource Heading}" Margin="0,0,0,12" />
+                <TextBlock Text="Checkout"
+                        Style="{StaticResource Heading}"
+                        Margin="0,0,0,12"/>
 
-                <TextBlock Text="Shipping address" Style="{StaticResource Label}" />
+                <TextBlock Text="Shipping address"
+                        Style="{StaticResource Label}"/>
                 <TextBox Text="{Binding ShippingAddress, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource InputBox}"
-                         AutomationProperties.AutomationId="checkout.address" />
+                         AutomationProperties.AutomationId="checkout.address"/>
 
-                <TextBlock Text="Card number" Style="{StaticResource Label}" />
+                <TextBlock Text="Card number"
+                        Style="{StaticResource Label}"/>
                 <TextBox Text="{Binding CardNumber, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource InputBox}"
-                         AutomationProperties.AutomationId="checkout.cardNumber" />
+                         AutomationProperties.AutomationId="checkout.cardNumber"/>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                        <TextBlock Text="Name on card" Style="{StaticResource Label}" />
+                    <StackPanel Grid.Column="0"
+                            Margin="0,0,8,0">
+                        <TextBlock Text="Name on card"
+                                Style="{StaticResource Label}"/>
                         <TextBox Text="{Binding CardHolder, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource InputBox}"
-                                 AutomationProperties.AutomationId="checkout.holder" />
+                                 AutomationProperties.AutomationId="checkout.holder"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                        <TextBlock Text="Expiry (MM/YY)" Style="{StaticResource Label}" />
+                    <StackPanel Grid.Column="1"
+                            Margin="0,0,8,0">
+                        <TextBlock Text="Expiry (MM/YY)"
+                                Style="{StaticResource Label}"/>
                         <TextBox Text="{Binding Expiry, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource InputBox}"
-                                 AutomationProperties.AutomationId="checkout.expiry" />
+                                 AutomationProperties.AutomationId="checkout.expiry"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="CVC" Style="{StaticResource Label}" />
+                        <TextBlock Text="CVC"
+                                Style="{StaticResource Label}"/>
                         <TextBox Text="{Binding Cvc, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource InputBox}"
-                                 AutomationProperties.AutomationId="checkout.cvc" />
+                                 AutomationProperties.AutomationId="checkout.cvc"/>
                     </StackPanel>
                 </Grid>
 
@@ -54,42 +66,48 @@
                            Foreground="{StaticResource Brush.Danger}"
                            TextWrapping="Wrap"
                            Margin="0,12,0,0"
-                           AutomationProperties.AutomationId="checkout.error" />
+                           AutomationProperties.AutomationId="checkout.error"/>
 
                 <TextBlock Text="Simulated gateway: 4242… succeeds, 4000 0000 0000 0002 is declined, 4000 0000 0000 9995 has insufficient funds."
                            Style="{StaticResource Muted}"
                            TextWrapping="Wrap"
-                           Margin="0,12,0,0" />
+                           Margin="0,12,0,0"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                <StackPanel Orientation="Horizontal"
+                        Margin="0,16,0,0">
                     <Button Content="Pay now"
                             Command="{Binding PayCommand}"
                             Style="{StaticResource PrimaryButton}"
-                            AutomationProperties.AutomationId="checkout.pay" />
+                            AutomationProperties.AutomationId="checkout.pay"/>
                     <Button Content="Back to cart"
                             Command="{Binding BackToCartCommand}"
                             Style="{StaticResource SecondaryButton}"
                             Margin="8,0,0,0"
-                            AutomationProperties.AutomationId="checkout.back" />
+                            AutomationProperties.AutomationId="checkout.back"/>
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <Border Grid.Column="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+        <Border Grid.Column="1"
+                Style="{StaticResource Card}"
+                VerticalAlignment="Top">
             <StackPanel>
-                <TextBlock Text="Order summary" Style="{StaticResource SubHeading}" />
-                <TextBlock Text="{Binding ItemCount, StringFormat={}{0} item(s)}" Style="{StaticResource Muted}" />
-                <Separator Margin="0,10" />
+                <TextBlock Text="Order summary"
+                        Style="{StaticResource SubHeading}"/>
+                <TextBlock Text="{Binding ItemCount, StringFormat={}{0} item(s)}"
+                        Style="{StaticResource Muted}"/>
+                <Separator Margin="0,10"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Total" FontWeight="SemiBold" />
+                    <TextBlock Text="Total"
+                            FontWeight="SemiBold"/>
                     <TextBlock Grid.Column="1"
                                Text="{Binding Total, StringFormat={}{0:C}}"
                                FontWeight="SemiBold"
-                               AutomationProperties.AutomationId="checkout.total" />
+                               AutomationProperties.AutomationId="checkout.total"/>
                 </Grid>
             </StackPanel>
         </Border>

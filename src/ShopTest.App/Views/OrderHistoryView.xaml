@@ -2,94 +2,108 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <DockPanel Margin="24">
-        <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+        <Grid DockPanel.Dock="Top"
+                Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Order history" Style="{StaticResource Heading}" />
+            <TextBlock Text="Order history"
+                    Style="{StaticResource Heading}"/>
             <Button Grid.Column="1"
                     Content="Refresh"
                     Command="{Binding RefreshCommand}"
                     Style="{StaticResource SecondaryButton}"
-                    AutomationProperties.AutomationId="orders.refresh" />
+                    AutomationProperties.AutomationId="orders.refresh"/>
         </Grid>
 
         <TextBlock DockPanel.Dock="Top"
                    Text="{Binding StatusMessage}"
                    Style="{StaticResource Muted}"
                    Margin="0,0,0,12"
-                   AutomationProperties.AutomationId="orders.status" />
+                   AutomationProperties.AutomationId="orders.status"/>
 
         <TextBlock DockPanel.Dock="Top"
                    Text="You have not placed any orders yet."
                    Style="{StaticResource Muted}"
                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"
-                   AutomationProperties.AutomationId="orders.empty" />
+                   AutomationProperties.AutomationId="orders.empty"/>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Orders}" AutomationProperties.AutomationId="orders.list">
+            <ItemsControl ItemsSource="{Binding Orders}"
+                    AutomationProperties.AutomationId="orders.list">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                        <Border Style="{StaticResource Card}"
+                                Margin="0,0,0,12">
                             <StackPanel>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Header}" Style="{StaticResource SubHeading}" />
-                                        <TextBlock Text="{Binding PlacedText}" Style="{StaticResource Muted}" />
+                                        <TextBlock Text="{Binding Header}"
+                                                Style="{StaticResource SubHeading}"/>
+                                        <TextBlock Text="{Binding PlacedText}"
+                                                Style="{StaticResource Muted}"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <StackPanel Grid.Column="1"
+                                            HorizontalAlignment="Right">
                                         <TextBlock Text="{Binding StatusText}"
                                                    FontWeight="SemiBold"
                                                    HorizontalAlignment="Right"
-                                                   AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.status}" />
-                                        <TextBlock Text="{Binding TotalText}" HorizontalAlignment="Right" />
+                                                   AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.status}"/>
+                                        <TextBlock Text="{Binding TotalText}"
+                                                HorizontalAlignment="Right"/>
                                     </StackPanel>
                                 </Grid>
 
-                                <ItemsControl ItemsSource="{Binding Lines}" Margin="0,10,0,0">
+                                <ItemsControl ItemsSource="{Binding Lines}"
+                                        Margin="0,10,0,0">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="0,2">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding Name}" Style="{StaticResource Muted}" />
+                                                <TextBlock Text="{Binding Name}"
+                                                        Style="{StaticResource Muted}"/>
                                                 <TextBlock Grid.Column="1"
                                                            Text="{Binding LineTotal, StringFormat={}{0:C}}"
-                                                           Style="{StaticResource Muted}" />
+                                                           Style="{StaticResource Muted}"/>
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
 
-                                <Expander Header="Status timeline" Margin="0,10,0,0">
+                                <Expander Header="Status timeline"
+                                        Margin="0,10,0,0">
                                     <ItemsControl ItemsSource="{Binding Timeline}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding}" Style="{StaticResource Muted}" Margin="0,2" />
+                                                <TextBlock Text="{Binding}"
+                                                        Style="{StaticResource Muted}"
+                                                        Margin="0,2"/>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                 </Expander>
 
-                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <StackPanel Orientation="Horizontal"
+                                        Margin="0,12,0,0">
                                     <Button Content="Cancel order"
                                             Command="{Binding CancelOrderCommand}"
                                             Style="{StaticResource SecondaryButton}"
                                             Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}"
-                                            AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.cancel}" />
+                                            AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.cancel}"/>
                                     <Button Content="Retry payment (demo card)"
                                             Command="{Binding RetryPaymentCommand}"
                                             Style="{StaticResource PrimaryButton}"
                                             Margin="8,0,0,0"
                                             Visibility="{Binding CanRetry, Converter={StaticResource BoolToVis}}"
-                                            AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.retry}" />
+                                            AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.retry}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>

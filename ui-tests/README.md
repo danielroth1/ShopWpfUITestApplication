@@ -23,16 +23,16 @@ Windows-MCP; nothing here runs on its own.
 
 `00-notepad-smoke.json` only proves the MCP plumbing; skip it once the shop is under test.
 
-| File | Covers |
-| --- | --- |
-| `01-auth-register-login.json` | registration, no admin escalation, sign out/in |
-| `02-catalog-search-filter.json` | search, category filter |
-| `03-cart-add-update-remove.json` | add, increment, remove, cart badge, totals |
-| `04-checkout-success.json` | paid order, payment row, history rows, cart cleared |
-| `05-checkout-decline.json` | declined card, failed order, cart retained |
-| `06-admin-seed-and-items.json` | admin gate, idempotent seeding, add item |
-| `07-order-lifecycle.json` | cancel paid order, refund, audit trail |
-| `08-saved-items.json` | save from catalog, list, remove |
+| File                             | Covers                                              |
+| -------------------------------- | --------------------------------------------------- |
+| `01-auth-register-login.json`    | registration, no admin escalation, sign out/in      |
+| `02-catalog-search-filter.json`  | search, category filter                             |
+| `03-cart-add-update-remove.json` | add, increment, remove, cart badge, totals          |
+| `04-checkout-success.json`       | paid order, payment row, history rows, cart cleared |
+| `05-checkout-decline.json`       | declined card, failed order, cart retained          |
+| `06-admin-seed-and-items.json`   | admin gate, idempotent seeding, add item            |
+| `07-order-lifecycle.json`        | cancel paid order, refund, audit trail              |
+| `08-saved-items.json`            | save from catalog, list, remove                     |
 
 ## Notes
 

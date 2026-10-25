@@ -45,6 +45,14 @@ Sign in with `admin@shop.local` / `Admin123!` (admin) or `client@shop.local` / `
 
 The loop is: deterministic gates -> fix -> UI scenario replay -> green or stop after 3 iterations.
 
+Every `-Gate all` run is checkpointed in git (`gauntlet/iter-<n>-start`, then
+`gauntlet/iter-<n>-green` or `-failed`). To undo a bad iteration:
+
+```powershell
+scripts\gauntlet.ps1 -Rollback                         # last green state
+scripts\gauntlet.ps1 -RollbackTo gauntlet/iter-1-start  # only the last iteration
+```
+
 ## Layout
 
 ```
@@ -59,12 +67,12 @@ artifacts/gauntlet  per-iteration logs, reports, screenshots (gitignored)
 
 ## Payment simulator
 
-| Card | Outcome |
-| --- | --- |
-| `4242 4242 4242 4242` | authorized |
+| Card                  | Outcome            |
+| --------------------- | ------------------ |
+| `4242 4242 4242 4242` | authorized         |
 | `4000 0000 0000 0002` | declined by issuer |
 | `4000 0000 0000 9995` | insufficient funds |
-| `4000 0000 0000 0069` | expired card |
-| `4000 0000 0000 0119` | processor error |
+| `4000 0000 0000 0069` | expired card       |
+| `4000 0000 0000 0119` | processor error    |
 
 Only the brand and last four digits are stored. No card number is persisted.

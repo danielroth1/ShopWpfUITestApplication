@@ -56,7 +56,8 @@ public partial class App : Application
             var window = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = window;
             await _host.Services.GetRequiredService<ShellViewModel>().ShowLoginAsync();
-            window.Show();        }
+            window.Show();
+        }
         catch (Exception ex)
         {
             MessageBox.Show($"The shop could not start.\n\n{ex}", "ShopTest", MessageBoxButton.OK, MessageBoxImage.Error);

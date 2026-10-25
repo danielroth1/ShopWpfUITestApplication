@@ -2,47 +2,60 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <DockPanel Margin="24">
-        <TextBlock DockPanel.Dock="Top" Text="Saved items" Style="{StaticResource Heading}" Margin="0,0,0,12" />
+        <TextBlock DockPanel.Dock="Top"
+                Text="Saved items"
+                Style="{StaticResource Heading}"
+                Margin="0,0,0,12"/>
 
         <TextBlock DockPanel.Dock="Top"
                    Text="{Binding StatusMessage}"
                    Style="{StaticResource Muted}"
                    Margin="0,0,0,12"
-                   AutomationProperties.AutomationId="saved.status" />
+                   AutomationProperties.AutomationId="saved.status"/>
 
         <TextBlock DockPanel.Dock="Top"
                    Text="Nothing saved yet. Use the Save button on a catalog item."
                    Style="{StaticResource Muted}"
                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"
-                   AutomationProperties.AutomationId="saved.empty" />
+                   AutomationProperties.AutomationId="saved.empty"/>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Items}" AutomationProperties.AutomationId="saved.list">
+            <ItemsControl ItemsSource="{Binding Items}"
+                    AutomationProperties.AutomationId="saved.list">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel />
+                        <WrapPanel/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource Card}" Width="280" Margin="0,0,16,16">
+                        <Border Style="{StaticResource Card}"
+                                Width="280"
+                                Margin="0,0,16,16">
                             <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding Category}" Style="{StaticResource Muted}" Margin="0,2,0,8" />
-                                <TextBlock Text="{Binding Price, StringFormat={}{0:C}}" FontSize="18" FontWeight="SemiBold" />
-                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <TextBlock Text="{Binding Name}"
+                                        FontWeight="SemiBold"
+                                        TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Category}"
+                                        Style="{StaticResource Muted}"
+                                        Margin="0,2,0,8"/>
+                                <TextBlock Text="{Binding Price, StringFormat={}{0:C}}"
+                                        FontSize="18"
+                                        FontWeight="SemiBold"/>
+                                <StackPanel Orientation="Horizontal"
+                                        Margin="0,10,0,0">
                                     <Button Content="Add to cart"
                                             Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
                                             Style="{StaticResource PrimaryButton}"
                                             Padding="12,6"
-                                            AutomationProperties.AutomationId="{Binding Id, StringFormat=saved.{0}.add}" />
+                                            AutomationProperties.AutomationId="{Binding Id, StringFormat=saved.{0}.add}"/>
                                     <Button Content="Remove"
                                             Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
                                             Style="{StaticResource SecondaryButton}"
                                             Margin="8,0,0,0"
-                                            AutomationProperties.AutomationId="{Binding Id, StringFormat=saved.{0}.remove}" />
+                                            AutomationProperties.AutomationId="{Binding Id, StringFormat=saved.{0}.remove}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>

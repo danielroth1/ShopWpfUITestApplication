@@ -25,7 +25,7 @@ For each iteration `n` in 1..3:
    - classify the failure (build / database / test / preflight),
    - fix the underlying code or configuration (never the gate to make it pass),
    - start the next iteration.
-   Never run UI gates when `build` or `tests` are red.
+     Never run UI gates when `build` or `tests` are red.
 
 3. When all deterministic gates pass, run the UI gates yourself:
    - G4 UI discovery: launch the app, take a `Snapshot`, and refresh `docs/ui-map.md` with the screens
@@ -38,10 +38,23 @@ For each iteration `n` in 1..3:
    fix the cause, and start the next iteration with a fresh database (the `all` gate set recreates it).
 
 Stop conditions:
+
 - All gates + all scenarios pass.
 - 3 iterations used without success: write the failure report and stop.
 - Preflight cannot be satisfied (missing tool, MCP unreachable): stop immediately and report the exact
   remediation step from `docs/gauntlet.md`.
+
+## Version control
+
+- Every `-Gate all` run creates a checkpoint before the gates: tag `gauntlet/iter-<n>-start`.
+  Uncommitted work at that moment is captured in a `gauntlet: iteration <n> baseline` commit.
+- When the run ends the script commits the result and tags it `gauntlet/iter-<n>-green` or
+  `gauntlet/iter-<n>-failed`. Only green tags are safe rollback targets.
+- If an iteration makes things worse, roll back instead of piling fixes on top:
+  `scripts\gauntlet.ps1 -Rollback` (last green) or `-RollbackTo gauntlet/iter-<n>-start`.
+  Rollback does `git reset --hard` + `git clean -fd`; anything uncommitted is lost.
+- Never rewrite a green tag, never force-push, never delete `gauntlet/*` tags.
+- Report the baseline and result short SHAs in the final summary.
 
 ## Hard rules
 
@@ -84,7 +97,12 @@ Result file per scenario (`results.json`):
   "runId": "20261025-161500",
   "status": "pass",
   "steps": [
-    { "index": 1, "action": "click", "status": "pass", "evidence": "step-01.png" }
+    {
+      "index": 1,
+      "action": "click",
+      "status": "pass",
+      "evidence": "step-01.png"
+    }
   ]
 }
 ```
@@ -97,13 +115,13 @@ Compare the trimmed stdout with `expect`. A mismatch fails the scenario with the
 
 ## Failure classification
 
-| Symptom | Class | Typical fix |
-| --- | --- | --- |
+| Symptom                              | Class              | Typical fix                                                 |
+| ------------------------------------ | ------------------ | ----------------------------------------------------------- |
 | Element not found after window is up | UI / automation id | Add or correct `AutomationProperties.AutomationId`, rebuild |
-| Window never appears | startup | Check app log/exception, database connectivity, migrations |
-| Assert text present but state wrong | logic | Fix the view model/service, add a regression test |
-| `sqlAssert` mismatch with passing UI | persistence | Fix the service/repository write path |
-| Test failure after UI change | regression | Fix code, keep the test |
+| Window never appears                 | startup            | Check app log/exception, database connectivity, migrations  |
+| Assert text present but state wrong  | logic              | Fix the view model/service, add a regression test           |
+| `sqlAssert` mismatch with passing UI | persistence        | Fix the service/repository write path                       |
+| Test failure after UI change         | regression         | Fix code, keep the test                                     |
 
 ## Final report
 

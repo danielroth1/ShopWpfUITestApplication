@@ -5,129 +5,201 @@
              xmlns:views="clr-namespace:ShopTest.App.Views"
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <SolidColorBrush x:Key="Brush.Page" Color="#F4F6F8" />
-        <SolidColorBrush x:Key="Brush.Surface" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="Brush.Ink" Color="#1B1F24" />
-        <SolidColorBrush x:Key="Brush.Muted" Color="#5D6673" />
-        <SolidColorBrush x:Key="Brush.Accent" Color="#1F6FEB" />
-        <SolidColorBrush x:Key="Brush.Border" Color="#DCE1E7" />
-        <SolidColorBrush x:Key="Brush.Success" Color="#1A7F37" />
-        <SolidColorBrush x:Key="Brush.Danger" Color="#B42318" />
+        <SolidColorBrush x:Key="Brush.Page"
+                Color="#F4F6F8"/>
+        <SolidColorBrush x:Key="Brush.Surface"
+                Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Brush.Ink"
+                Color="#1B1F24"/>
+        <SolidColorBrush x:Key="Brush.Muted"
+                Color="#5D6673"/>
+        <SolidColorBrush x:Key="Brush.Accent"
+                Color="#1F6FEB"/>
+        <SolidColorBrush x:Key="Brush.Border"
+                Color="#DCE1E7"/>
+        <SolidColorBrush x:Key="Brush.Success"
+                Color="#1A7F37"/>
+        <SolidColorBrush x:Key="Brush.Danger"
+                Color="#B42318"/>
 
-        <Style x:Key="Heading" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="24" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource Brush.Ink}" />
+        <Style x:Key="Heading"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="24"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Ink}"/>
         </Style>
 
-        <Style x:Key="SubHeading" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource Brush.Ink}" />
-            <Setter Property="Margin" Value="0,0,0,6" />
+        <Style x:Key="SubHeading"
+                TargetType="TextBlock">
+            <Setter Property="FontSize"
+                    Value="16"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Ink}"/>
+            <Setter Property="Margin"
+                    Value="0,0,0,6"/>
         </Style>
 
-        <Style x:Key="Muted" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Brush.Muted}" />
-            <Setter Property="FontSize" Value="13" />
+        <Style x:Key="Muted"
+                TargetType="TextBlock">
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Muted}"/>
+            <Setter Property="FontSize"
+                    Value="13"/>
         </Style>
 
-        <Style x:Key="Label" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Brush.Muted}" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Margin" Value="0,8,0,4" />
+        <Style x:Key="Label"
+                TargetType="TextBlock">
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Muted}"/>
+            <Setter Property="FontSize"
+                    Value="12"/>
+            <Setter Property="Margin"
+                    Value="0,8,0,4"/>
         </Style>
 
-        <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource Brush.Surface}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="16" />
+        <Style x:Key="Card"
+                TargetType="Border">
+            <Setter Property="Background"
+                    Value="{StaticResource Brush.Surface}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource Brush.Border}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="CornerRadius"
+                    Value="10"/>
+            <Setter Property="Padding"
+                    Value="16"/>
         </Style>
 
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource Brush.Accent}" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="16,8" />
-            <Setter Property="MinHeight" Value="34" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Cursor" Value="Hand" />
+        <Style x:Key="PrimaryButton"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="{StaticResource Brush.Accent}"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Padding"
+                    Value="16,8"/>
+            <Setter Property="MinHeight"
+                    Value="34"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
         </Style>
 
-        <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource Brush.Surface}" />
-            <Setter Property="Foreground" Value="{StaticResource Brush.Ink}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="Cursor" Value="Hand" />
+        <Style x:Key="SecondaryButton"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="{StaticResource Brush.Surface}"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Ink}"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource Brush.Border}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Padding"
+                    Value="12,6"/>
+            <Setter Property="MinHeight"
+                    Value="32"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
         </Style>
 
-        <Style x:Key="MenuButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource Brush.Ink}" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="Padding" Value="10,10" />
-            <Setter Property="Cursor" Value="Hand" />
+        <Style x:Key="MenuButton"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Ink}"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+            <Setter Property="Padding"
+                    Value="10,10"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
         </Style>
 
-        <Style x:Key="IconButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource Brush.Ink}" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="FontSize" Value="20" />
-            <Setter Property="Padding" Value="10,2" />
-            <Setter Property="Cursor" Value="Hand" />
+        <Style x:Key="IconButton"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Ink}"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="FontSize"
+                    Value="20"/>
+            <Setter Property="Padding"
+                    Value="10,2"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
         </Style>
 
-        <Style x:Key="InputBox" TargetType="TextBox">
-            <Setter Property="Padding" Value="8,6" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style x:Key="InputBox"
+                TargetType="TextBox">
+            <Setter Property="Padding"
+                    Value="8,6"/>
+            <Setter Property="MinHeight"
+                    Value="32"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource Brush.Border}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Background"
+                    Value="White"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
         </Style>
 
-        <Style x:Key="InputPassword" TargetType="PasswordBox">
-            <Setter Property="Padding" Value="8,6" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="BorderBrush" Value="{StaticResource Brush.Border}" />
-            <Setter Property="BorderThickness" Value="1" />
+        <Style x:Key="InputPassword"
+                TargetType="PasswordBox">
+            <Setter Property="Padding"
+                    Value="8,6"/>
+            <Setter Property="MinHeight"
+                    Value="32"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource Brush.Border}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
         </Style>
 
         <DataTemplate DataType="{x:Type vm:LoginViewModel}">
-            <views:LoginView />
+            <views:LoginView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:CatalogViewModel}">
-            <views:CatalogView />
+            <views:CatalogView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:CartViewModel}">
-            <views:CartView />
+            <views:CartView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:CheckoutViewModel}">
-            <views:CheckoutView />
+            <views:CheckoutView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:OrderConfirmationViewModel}">
-            <views:OrderConfirmationView />
+            <views:OrderConfirmationView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:OrderHistoryViewModel}">
-            <views:OrderHistoryView />
+            <views:OrderHistoryView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SavedItemsViewModel}">
-            <views:SavedItemsView />
+            <views:SavedItemsView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:AccountViewModel}">
-            <views:AccountView />
+            <views:AccountView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:AdminViewModel}">
-            <views:AdminView />
+            <views:AdminView/>
         </DataTemplate>
     </Application.Resources>
 </Application>

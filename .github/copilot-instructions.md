@@ -31,6 +31,7 @@ running in a throwaway Podman container. There is no separate backend and no HTT
 - Build only: `scripts\gauntlet.ps1 -Gate build`
 - Database only: `scripts\gauntlet.ps1 -Gate database -KeepContainer`
 - Tests only: `scripts\gauntlet.ps1 -Gate tests -KeepContainer`
+- Roll back to the last green checkpoint: `scripts\gauntlet.ps1 -Rollback`
 - Run the app: `src\ShopTest.App\bin\Debug\net10.0-windows\ShopTest.App.exe`
 
 ## Seed accounts
