@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShopTest.App.Services;
+using ShopTest.Core.Data;
 using ShopTest.Core.Services;
 
 namespace ShopTest.App.ViewModels;
@@ -11,11 +12,12 @@ public sealed partial class LoginViewModel : ViewModelBase
     private readonly SessionService _session;
     private readonly IViewNavigator _navigator;
 
+    // Prefilled so the demo client can sign in with one click; the fields stay editable.
     [ObservableProperty]
-    private string email = string.Empty;
+    private string email = DbSeeder.DemoClientEmail;
 
     [ObservableProperty]
-    private string password = string.Empty;
+    private string password = DbSeeder.DemoClientPassword;
 
     [ObservableProperty]
     private string displayName = string.Empty;

@@ -13,7 +13,7 @@
                 VerticalAlignment="Top">
             <StackPanel>
                 <TextBlock Text="Categories"
-                        Style="{StaticResource SubHeading}"/>
+                           Style="{StaticResource SubHeading}"/>
                 <ListBox ItemsSource="{Binding Categories}"
                          SelectedItem="{Binding SelectedCategory}"
                          DisplayMemberPath="Name"
@@ -27,7 +27,7 @@
 
         <DockPanel Grid.Column="1">
             <Grid DockPanel.Dock="Top"
-                    Margin="0,0,0,12">
+                  Margin="0,0,0,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -88,8 +88,8 @@
                                                FontSize="15"
                                                TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding Category}"
-                                            Style="{StaticResource Muted}"
-                                            Margin="0,2,0,8"/>
+                                               Style="{StaticResource Muted}"
+                                               Margin="0,2,0,8"/>
                                     <TextBlock Text="{Binding Description}"
                                                TextWrapping="Wrap"
                                                Height="46"

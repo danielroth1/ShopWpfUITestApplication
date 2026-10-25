@@ -26,6 +26,30 @@ running in a throwaway Podman container. There is no separate backend and no HTT
 - Every interactive XAML control needs an `AutomationProperties.AutomationId` (see the instruction file).
 - Do not weaken tests or UI scenarios to get a green gauntlet run.
 
+## Verifying UI changes (optional)
+
+Windows-MCP tools (`Snapshot`, `Click`, `Type`, `WaitFor`, `App`) are attached and can drive the running
+app through the accessibility tree. They are optional: reach for them when a change's outcome can only be
+confirmed by looking at or interacting with the real UI, and skip them when a cheaper check answers the
+same question.
+
+Cheapest check that answers the question wins:
+
+1. `dotnet build` and `scripts\gauntlet.ps1 -Gate tests` - logic, services, persistence.
+2. `dotnet test tests\ShopTest.UiTests` - real XAML, bindings and DI wiring; no window, no database, ~1 s.
+   This is the cheapest UI check and it covers the AutomationId contract on every screen.
+3. `scripts\tools\ui-probe.ps1` (app running) - which AutomationIds exist on the current screen.
+4. `scripts\tools\ui-login-smoke.ps1 -AddItemToCart` - sign-in plus catalog/cart smoke.
+5. Windows-MCP - state a probe cannot see: navigation, enabled/disabled, error text, totals, order status.
+
+MCP is slow (seconds per step) and holds a desktop lease, so prefer a probe or a test when either can
+settle it, and don't replay a whole scenario to check one element.
+
+When Windows-MCP is used: launch the app after the database gate, `WaitFor` rather than sleeping, scope
+`Snapshot` with `region` and `use_ui_tree: false` when only a picture is needed, resolve targets by
+`AutomationId` before visible `text`, and kill the app when done. Name the check you ran and what it showed;
+never report a user-visible change as working without one.
+
 ## Commands
 
 - Full gate run: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\gauntlet.ps1 -Gate all -Iteration 1`
@@ -35,6 +59,8 @@ running in a throwaway Podman container. There is no separate backend and no HTT
   (VS Code tasks `shop: db start` / `shop: db stop`)
 - Recreate the database for a fresh gauntlet run: `scripts\gauntlet.ps1 -Gate database`
 - Tests only: `scripts\gauntlet.ps1 -Gate tests -KeepContainer`
+- In-process UI tests (no database, no window, no focus steal; ~1 s):
+  `dotnet test tests\ShopTest.UiTests`
 - Roll back to the last green checkpoint: `scripts\gauntlet.ps1 -Rollback`
 - Run the app (migrates and seeds on startup; the database container must be running):
   `dotnet run --project src\ShopTest.App`

@@ -11,44 +11,28 @@ namespace ShopTest.App;
 
 public partial class App : Application
 {
+    /// <summary>
+    /// Set to <c>1</c> by the in-process UI test harness (tests/ShopTest.UiTests). The harness constructs
+    /// this class to load the real App.xaml resources, and WPF raises <c>Startup</c> as soon as the
+    /// dispatcher loop runs, so this opt-out keeps UI tests offline: no host, no migration, no seeding,
+    /// no main window.
+    /// </summary>
+    public const string SkipStartupVariable = "SHOPTEST_SKIP_STARTUP";
+
     private IHost? _host;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
+        if (Environment.GetEnvironmentVariable(SkipStartupVariable) == "1")
+        {
+            return;
+        }
+
         try
         {
-            _host = Host.CreateDefaultBuilder(e.Args)
-                .ConfigureServices(services =>
-                {
-                    services.AddDbContextFactory<ShopDbContext>(options =>
-                        options.UseNpgsql(DbConnectionInfo.Current));
-
-                    services.AddSingleton<PaymentService>();
-                    services.AddSingleton<AuthService>();
-                    services.AddSingleton<CatalogService>();
-                    services.AddSingleton<CartService>();
-                    services.AddSingleton<SavedItemsService>();
-                    services.AddSingleton<OrderService>();
-                    services.AddSingleton<AdminService>();
-
-                    services.AddSingleton<SessionService>();
-                    services.AddSingleton<ShellViewModel>();
-                    services.AddSingleton<IViewNavigator>(sp => sp.GetRequiredService<ShellViewModel>());
-
-                    services.AddTransient<LoginViewModel>();
-                    services.AddTransient<CatalogViewModel>();
-                    services.AddTransient<CartViewModel>();
-                    services.AddTransient<CheckoutViewModel>();
-                    services.AddTransient<OrderHistoryViewModel>();
-                    services.AddTransient<SavedItemsViewModel>();
-                    services.AddTransient<AccountViewModel>();
-                    services.AddTransient<AdminViewModel>();
-
-                    services.AddSingleton<MainWindow>();
-                })
-                .Build();
+            _host = CompositionRoot.CreateHost(e.Args);
 
             await _host.StartAsync();
             await PrepareDatabaseAsync();

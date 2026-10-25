@@ -60,7 +60,8 @@
                                 </Grid>
 
                                 <ItemsControl ItemsSource="{Binding Lines}"
-                                        Margin="0,10,0,0">
+                                        Margin="0,10,0,0"
+                                        AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.lines}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="0,2">
@@ -79,8 +80,10 @@
                                 </ItemsControl>
 
                                 <Expander Header="Status timeline"
-                                        Margin="0,10,0,0">
-                                    <ItemsControl ItemsSource="{Binding Timeline}">
+                                        Margin="0,10,0,0"
+                                        AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.timelinePanel}">
+                                    <ItemsControl ItemsSource="{Binding Timeline}"
+                                            AutomationProperties.AutomationId="{Binding Order.Id, StringFormat=order.{0}.timeline}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding}"

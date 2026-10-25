@@ -57,7 +57,7 @@
                         HorizontalAlignment="Center"
                         AutomationProperties.AutomationId="auth.toggleMode"/>
 
-                <TextBlock Text="Demo accounts: admin@shop.local / Admin123!   ·   client@shop.local / Client123!"
+                <TextBlock Text="Demo client credentials are prefilled above. Admin: admin@shop.local / Admin123!"
                            Style="{StaticResource Muted}"
                            TextWrapping="Wrap"
                            Margin="0,18,0,0"

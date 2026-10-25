@@ -1,7 +1,8 @@
 # ShopTest
 
 A test shop application: one .NET 10 WPF process (UI + domain + data access) over PostgreSQL in a
-throwaway Podman container, verified by a self-checking gauntlet loop and Windows-MCP UI scenarios.
+throwaway Podman container, verified by an in-process UI test suite, a self-checking gauntlet loop and
+Windows-MCP UI scenarios.
 
 ## What works today
 
@@ -41,14 +42,14 @@ it with `SHOP_DB_CONNECTION`, or with the `SHOP_DB_HOST` / `SHOP_DB_PORT` / `SHO
 
 VS Code tasks (`Ctrl+Shift+P` -> `Tasks: Run Task`):
 
-| Task                         | What it does                                                                      |
-| ---------------------------- | --------------------------------------------------------------------------------- |
+| Task                         | What it does                                                                       |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
 | `shop: db start`             | starts Podman, then starts or creates the `shop-pg` container on `127.0.0.1:55432` |
 | `shop: db stop`              | stops the `shop-pg` container                                                      |
 | `shop: build`                | `dotnet build ShopTest.slnx`                                                       |
-| `shop: rebuild`              | `dotnet build ShopTest.slnx --no-incremental` (full compile)                        |
+| `shop: rebuild`              | `dotnet build ShopTest.slnx --no-incremental` (full compile)                       |
 | `shop: clean`                | stops the app and deletes every `bin`/`obj` folder                                 |
-| `shop: run app (dotnet run)` | builds and starts the app with `dotnet run`                                       |
+| `shop: run app (dotnet run)` | builds and starts the app with `dotnet run`                                        |
 | `shop: run app`              | starts an existing build                                                           |
 | `shop: prepare`              | `shop: db start` followed by `shop: build` (used by the `F5` configuration)        |
 
@@ -96,12 +97,84 @@ scripts\gauntlet.ps1 -Rollback                         # last green state
 scripts\gauntlet.ps1 -RollbackTo gauntlet/iter-1-start  # only the last iteration
 ```
 
+## In-process UI tests
+
+`tests/ShopTest.UiTests` drives the real XAML from inside the test host on a single STA thread. It creates
+no window, takes no desktop lease and touches no database, so it is safe to run while you work:
+
+```powershell
+dotnet test tests\ShopTest.UiTests
+```
+
+That is the cheapest answer to "did my change break the UI?", so reach for it before the gauntlet or
+Windows-MCP.
+
+| Test                            | What it proves                                                                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `AutomationIdContractTests`     | every authored interactive control across 10 screens (the 9 views plus the `MainWindow` shell) has a non-empty, unique `AutomationId` |
+| `DataTemplateAutomationIdTests` | ids that only exist once an item template materializes (`cart.line.{id}.remove`, `order.{id}.cancel`, ...) are unique per item        |
+| `LoginViewInteractionTests`     | an automation-peer click reaches the command, updates the view model and re-renders the binding; and that no window is ever shown     |
+| `CartViewInteractionTests`      | a peer click on `cart.continue` reaches the command and navigates - the worked example below, kept compiling                          |
+| `StartupWiringTests`            | the real DI container resolves every view model and `MainWindow`, so a missing registration fails here instead of on a user's click   |
+
+### How it works
+
+- `UiHost` owns the single WPF `Application` and the STA thread it lives on. UI work goes through
+  `UiHost.Invoke`; `UiHost.PumpUntil` pumps the dispatcher, which is required because automation peers
+  post their work (`ButtonAutomationPeer.Invoke` dispatches at input priority).
+- The real `App` class is constructed so `App.xaml` brushes, styles and converters resolve exactly as at
+  runtime. `App.SkipStartupVariable` (`SHOPTEST_SKIP_STARTUP=1`, set by the harness) stops `OnStartup`, so
+  there is no host, no migration, no seeding and no window.
+- `Ui` is the driver: `Show` (measure + arrange), `Find` / `Require`, `Click`, `SetText`, `Text`,
+  `IsEffectivelyVisible`. Everything goes through the same automation peers that UI Automation uses.
+- `OfflineUiGraph` builds view models pre-seeded with sample data, and `OfflineDbContextFactory` throws if a
+  test reaches the data layer.
+
+### Adding a check
+
+```csharp
+[Fact]
+public void Continuing_from_the_cart_navigates_to_the_catalog()
+{
+    var navigator = new RecordingNavigator();
+    FrameworkElement view = UiHost.Invoke(() => Ui.Show(new CartView(), OfflineUiGraph.Cart(navigator)));
+
+    UiHost.Invoke(() => Ui.Click(view, "cart.continue"));
+    UiHost.PumpUntil(
+        () => navigator.Calls.Contains("catalog"),
+        "cart.continue should navigate to the catalog");
+}
+```
+
+### Rules
+
+- **Lay it out before walking it.** A freshly constructed view has no visual tree; `Ui.Show` performs the
+  `Measure`/`Arrange` pass that applies templates. A test that walks an unlaid view finds nothing and passes
+  for the wrong reason, which is why a screen yielding zero authored controls fails the contract check.
+- **No database.** Anything that needs real rows belongs in `ShopTest.IntegrationTests`.
+- **Seed at least two items per collection** when exercising a `DataTemplate`. Uniqueness is what catches a
+  template whose id forgot the item key; with a single item there is nothing to collide with.
+- **Control template parts are not yours.** Controls created by a control's own `ControlTemplate` (a
+  `ComboBox`'s drop-down button, an `Expander`'s header toggle) are skipped. Content inside a `DataTemplate`
+  is app-authored and is checked.
+- **Do not weaken a check to get it green** - same rule as the gauntlet. Fix the XAML or the view model.
+
+### What it deliberately does not cover
+
+- Real input: mouse capture, focus and tab order, hit-testing at real DPI. No HWND is created, so those
+  behaviours are out of reach here.
+- The startup path itself (migrations, seeding, first-run ordering). `StartupWiringTests` covers the DI
+  graph; `ShopTest.IntegrationTests` covers the data.
+- Pixels. Offscreen `RenderTargetBitmap` goldens are the obvious next step if visual regression ever matters
+  more than the contract.
+
 ## Layout
 
 ```
 src/ShopTest.Core   entities, EF Core context, migrations, services, seeding
 src/ShopTest.App    WPF shell, MVVM view models, views
 tests/ShopTest.IntegrationTests   xUnit against real PostgreSQL
+tests/ShopTest.UiTests            in-process WPF tests: AutomationId contract, bindings, DI wiring
 scripts             gauntlet runner, gates, podman + MCP helpers
 ui-tests            declarative Windows-MCP scenarios
 docs                gauntlet guide, live UI map

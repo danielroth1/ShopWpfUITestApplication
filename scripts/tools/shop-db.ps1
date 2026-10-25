@@ -33,8 +33,8 @@ Import-DotEnv (Join-Path $repoRoot '.env')
 $podman = Resolve-ToolPath `
     -Explicit $env:SHOP_PODMAN `
     -Candidates @(
-        'C:\Users\daniel\AppData\Local\Programs\Podman\podman.exe'
-    ) `
+    'C:\Users\daniel\AppData\Local\Programs\Podman\podman.exe'
+) `
     -Fallback 'podman'
 
 $container = Get-EnvOrDefault 'SHOP_PG_CONTAINER' 'shop-pg'
