@@ -1,0 +1,53 @@
+{
+  "id": "05-checkout-decline",
+  "title": "A declined card leaves the order unpaid and the cart intact",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "click", "target": { "automationId": "auth.toggleMode" } },
+    { "action": "waitFor", "target": { "automationId": "auth.displayName" }, "timeoutMs": 10000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "{{run.email}}", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Password123!", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.displayName" }, "text": "{{run.name}}", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "type", "target": { "automationId": "catalog.search" }, "text": "Fern Planter", "clear": true },
+    { "action": "click", "target": { "automationId": "catalog.searchButton" } },
+    { "action": "waitFor", "target": { "text": "Fern Planter" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "text": "Add to cart" } },
+    { "action": "click", "target": { "automationId": "shell.cartButton" } },
+    { "action": "waitFor", "target": { "automationId": "cart.checkout" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "automationId": "cart.checkout" } },
+    { "action": "waitFor", "target": { "automationId": "checkout.pay" }, "timeoutMs": 10000 },
+    { "action": "type", "target": { "automationId": "checkout.cardNumber" }, "text": "4000 0000 0000 0002", "clear": true },
+    { "action": "click", "target": { "automationId": "checkout.pay" } },
+    { "action": "waitFor", "target": { "automationId": "checkout.error" }, "timeoutMs": 20000 },
+    { "action": "assertText", "text": "declined" },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT \"Status\" FROM \"Orders\" WHERE \"UserId\" = (SELECT \"Id\" FROM \"Users\" WHERE \"Email\"='{{run.email}}') ORDER BY \"Id\" DESC LIMIT 1",
+      "expect": "PaymentFailed"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"CartItems\" WHERE \"UserId\" = (SELECT \"Id\" FROM \"Users\" WHERE \"Email\"='{{run.email}}')",
+      "expect": "1",
+      "description": "Cart is kept so the shopper can retry"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT p.\"Status\" FROM \"Payments\" p JOIN \"Orders\" o ON o.\"Id\"=p.\"OrderId\" JOIN \"Users\" u ON u.\"Id\"=o.\"UserId\" WHERE u.\"Email\"='{{run.email}}'",
+      "expect": "Declined"
+    },
+    { "action": "screenshot", "label": "checkout-declined" }
+  ]
+}

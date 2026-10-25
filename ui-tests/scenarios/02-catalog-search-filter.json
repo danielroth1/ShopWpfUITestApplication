@@ -1,0 +1,37 @@
+{
+  "id": "02-catalog-search-filter",
+  "title": "Search and category filtering narrow the catalog",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "client@shop.local", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Client123!", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "assertText", "text": "Aurora Headphones" },
+    { "action": "type", "target": { "automationId": "catalog.search" }, "text": "headphones", "clear": true },
+    { "action": "click", "target": { "automationId": "catalog.searchButton" } },
+    { "action": "waitFor", "target": { "text": "Aurora Headphones" }, "timeoutMs": 10000 },
+    { "action": "assertText", "text": "item(s) found" },
+    { "action": "click", "target": { "automationId": "catalog.clearButton" } },
+    { "action": "waitFor", "target": { "text": "Aurora Headphones" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "text": "Books" } },
+    { "action": "waitFor", "target": { "text": "Bread & Butter" }, "timeoutMs": 10000 },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"Categories\" WHERE \"Slug\" = 'books'",
+      "expect": "1",
+      "description": "Category seed is present"
+    },
+    { "action": "screenshot", "label": "catalog-books" }
+  ]
+}

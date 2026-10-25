@@ -1,0 +1,44 @@
+{
+  "id": "06-admin-seed-and-items",
+  "title": "Admin panel seeds data and adds an item that reaches the catalog",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "admin@shop.local", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Admin123!", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "click", "target": { "automationId": "shell.burgerButton" } },
+    { "action": "waitFor", "target": { "automationId": "burger.admin" }, "timeoutMs": 5000 },
+    { "action": "click", "target": { "automationId": "burger.admin" } },
+    { "action": "waitFor", "target": { "automationId": "admin.seedItems" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "automationId": "admin.seedItems" } },
+    { "action": "assertText", "text": "seeded" },
+    { "action": "click", "target": { "automationId": "admin.seedUsers" } },
+    { "action": "type", "target": { "automationId": "admin.newName" }, "text": "{{runId}} Test Item", "clear": true },
+    { "action": "type", "target": { "automationId": "admin.newDescription" }, "text": "Created by the gauntlet", "clear": true },
+    { "action": "type", "target": { "automationId": "admin.newPrice" }, "text": "42.50", "clear": true },
+    { "action": "click", "target": { "automationId": "admin.addItem" } },
+    { "action": "waitFor", "target": { "text": "{{runId}} Test Item" }, "timeoutMs": 10000 },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"Items\" WHERE \"Name\" = '{{runId}} Test Item' AND \"Price\" = 42.50",
+      "expect": "1"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"Users\" WHERE \"Email\" IN ('admin@shop.local','client@shop.local')",
+      "expect": "2"
+    },
+    { "action": "screenshot", "label": "admin-panel" }
+  ]
+}

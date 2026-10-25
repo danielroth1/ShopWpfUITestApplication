@@ -1,0 +1,147 @@
+<UserControl x:Class="ShopTest.App.Views.CartView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="340" />
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Grid.Column="0" Margin="0,0,16,0">
+            <TextBlock DockPanel.Dock="Top" Text="Your cart" Style="{StaticResource Heading}" Margin="0,0,0,12" />
+            <TextBlock DockPanel.Dock="Top"
+                       Text="{Binding StatusMessage}"
+                       Style="{StaticResource Muted}"
+                       Margin="0,0,0,12"
+                       AutomationProperties.AutomationId="cart.status" />
+
+            <TextBlock DockPanel.Dock="Top"
+                       Text="Your cart is empty."
+                       Style="{StaticResource Muted}"
+                       Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"
+                       AutomationProperties.AutomationId="cart.empty" />
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Lines}" AutomationProperties.AutomationId="cart.lines">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding UnitPrice, StringFormat={}{0:C} each}" Style="{StaticResource Muted}" />
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Quantity}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               AutomationProperties.AutomationId="{Binding ItemId, StringFormat=cart.line.{0}.quantity}" />
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="−"
+                                                Command="{Binding DataContext.DecreaseCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SecondaryButton}"
+                                                Width="36"
+                                                AutomationProperties.AutomationId="{Binding ItemId, StringFormat=cart.line.{0}.decrease}" />
+                                        <Button Content="+"
+                                                Command="{Binding DataContext.IncreaseCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SecondaryButton}"
+                                                Width="36"
+                                                Margin="6,0,0,0"
+                                                AutomationProperties.AutomationId="{Binding ItemId, StringFormat=cart.line.{0}.increase}" />
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="3"
+                                               Text="{Binding LineTotal, StringFormat={}{0:C}}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Right"
+                                               FontWeight="SemiBold" />
+
+                                    <Button Grid.Column="4"
+                                            Content="Remove"
+                                            Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Margin="12,0,0,0"
+                                            AutomationProperties.AutomationId="{Binding ItemId, StringFormat=cart.line.{0}.remove}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+
+        <Border Grid.Column="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+            <StackPanel>
+                <TextBlock Text="Summary" Style="{StaticResource SubHeading}" />
+
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Subtotal" Style="{StaticResource Muted}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Subtotal, StringFormat={}{0:C}}" />
+                </Grid>
+
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Shipping" Style="{StaticResource Muted}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Shipping, StringFormat={}{0:C}}" />
+                </Grid>
+
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Tax" Style="{StaticResource Muted}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Tax, StringFormat={}{0:C}}" />
+                </Grid>
+
+                <Separator Margin="0,10" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Total" FontWeight="SemiBold" FontSize="16" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding Total, StringFormat={}{0:C}}"
+                               FontWeight="SemiBold"
+                               FontSize="16"
+                               AutomationProperties.AutomationId="cart.total" />
+                </Grid>
+
+                <Button Content="Checkout"
+                        Command="{Binding CheckoutCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="0,16,0,0"
+                        AutomationProperties.AutomationId="cart.checkout" />
+
+                <Button Content="Continue shopping"
+                        Command="{Binding ContinueShoppingCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="0,8,0,0"
+                        AutomationProperties.AutomationId="cart.continue" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

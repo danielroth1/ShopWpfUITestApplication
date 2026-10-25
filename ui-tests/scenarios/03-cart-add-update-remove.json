@@ -1,0 +1,49 @@
+{
+  "id": "03-cart-add-update-remove",
+  "title": "Add an item, increment its quantity, then remove it",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "client@shop.local", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Client123!", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "type", "target": { "automationId": "catalog.search" }, "text": "Balance Mat", "clear": true },
+    { "action": "click", "target": { "automationId": "catalog.searchButton" } },
+    { "action": "waitFor", "target": { "text": "Balance Mat" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "text": "Add to cart" }, "description": "Only one card is on screen after the search" },
+    { "action": "waitFor", "target": { "text": "Cart (1)" }, "timeoutMs": 10000 },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT coalesce(sum(c.\"Quantity\"),0) FROM \"CartItems\" c JOIN \"Items\" i ON i.\"Id\"=c.\"ItemId\" JOIN \"Users\" u ON u.\"Id\"=c.\"UserId\" WHERE u.\"Email\"='client@shop.local' AND i.\"Name\"='Balance Mat'",
+      "expect": "1"
+    },
+    { "action": "click", "target": { "automationId": "shell.cartButton" } },
+    { "action": "waitFor", "target": { "automationId": "cart.total" }, "timeoutMs": 10000 },
+    { "action": "assertText", "text": "Balance Mat" },
+    { "action": "click", "target": { "text": "+" } },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT coalesce(sum(c.\"Quantity\"),0) FROM \"CartItems\" c JOIN \"Items\" i ON i.\"Id\"=c.\"ItemId\" JOIN \"Users\" u ON u.\"Id\"=c.\"UserId\" WHERE u.\"Email\"='client@shop.local' AND i.\"Name\"='Balance Mat'",
+      "expect": "2",
+      "description": "Increment is persisted immediately"
+    },
+    { "action": "click", "target": { "text": "Remove" } },
+    { "action": "waitFor", "target": { "automationId": "cart.empty" }, "timeoutMs": 10000 },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT coalesce(sum(c.\"Quantity\"),0) FROM \"CartItems\" c JOIN \"Items\" i ON i.\"Id\"=c.\"ItemId\" JOIN \"Users\" u ON u.\"Id\"=c.\"UserId\" WHERE u.\"Email\"='client@shop.local' AND i.\"Name\"='Balance Mat'",
+      "expect": "0"
+    },
+    { "action": "screenshot", "label": "cart-empty" }
+  ]
+}

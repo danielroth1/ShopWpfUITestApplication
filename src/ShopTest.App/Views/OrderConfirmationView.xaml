@@ -1,0 +1,35 @@
+<UserControl x:Class="ShopTest.App.Views.OrderConfirmationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Style="{StaticResource Card}"
+            Width="560"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="32">
+        <StackPanel>
+            <TextBlock Text="Payment approved" Style="{StaticResource Heading}" Foreground="{StaticResource Brush.Success}" />
+            <TextBlock Text="{Binding OrderNumber}"
+                       Style="{StaticResource SubHeading}"
+                       Margin="0,12,0,0"
+                       AutomationProperties.AutomationId="confirmation.orderNumber" />
+            <TextBlock Text="{Binding StatusText}"
+                       Style="{StaticResource Muted}"
+                       AutomationProperties.AutomationId="confirmation.status" />
+            <TextBlock Text="{Binding LineSummary}" Style="{StaticResource Muted}" Margin="0,8,0,0" />
+            <TextBlock Text="{Binding TotalText}" FontSize="22" FontWeight="SemiBold" Margin="0,8,0,0" />
+            <TextBlock Text="{Binding Address}" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                <Button Content="View order history"
+                        Command="{Binding ViewOrdersCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        AutomationProperties.AutomationId="confirmation.viewOrders" />
+                <Button Content="Continue shopping"
+                        Command="{Binding ContinueShoppingCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="8,0,0,0"
+                        AutomationProperties.AutomationId="confirmation.continue" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

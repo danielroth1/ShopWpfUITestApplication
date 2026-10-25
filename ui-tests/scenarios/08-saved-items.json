@@ -1,0 +1,44 @@
+{
+  "id": "08-saved-items",
+  "title": "Save an item from the catalog and remove it from the saved list",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "client@shop.local", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Client123!", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "type", "target": { "automationId": "catalog.search" }, "text": "Climb Chalk Bag", "clear": true },
+    { "action": "click", "target": { "automationId": "catalog.searchButton" } },
+    { "action": "waitFor", "target": { "text": "Climb Chalk Bag" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "text": "Save" } },
+    { "action": "waitFor", "target": { "text": "saved for later" }, "timeoutMs": 10000 },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"SavedItems\" s JOIN \"Items\" i ON i.\"Id\"=s.\"ItemId\" JOIN \"Users\" u ON u.\"Id\"=s.\"UserId\" WHERE u.\"Email\"='client@shop.local' AND i.\"Name\"='Climb Chalk Bag'",
+      "expect": "1"
+    },
+    { "action": "click", "target": { "automationId": "shell.burgerButton" } },
+    { "action": "waitFor", "target": { "automationId": "burger.saved" }, "timeoutMs": 5000 },
+    { "action": "click", "target": { "automationId": "burger.saved" } },
+    { "action": "waitFor", "target": { "automationId": "saved.list" }, "timeoutMs": 10000 },
+    { "action": "assertText", "text": "Climb Chalk Bag" },
+    { "action": "click", "target": { "text": "Remove" } },
+    { "action": "waitFor", "target": { "automationId": "saved.empty" }, "timeoutMs": 10000 },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"SavedItems\" s JOIN \"Items\" i ON i.\"Id\"=s.\"ItemId\" JOIN \"Users\" u ON u.\"Id\"=s.\"UserId\" WHERE u.\"Email\"='client@shop.local' AND i.\"Name\"='Climb Chalk Bag'",
+      "expect": "0"
+    },
+    { "action": "screenshot", "label": "saved-items-empty" }
+  ]
+}

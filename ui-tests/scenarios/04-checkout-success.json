@@ -1,0 +1,65 @@
+{
+  "id": "04-checkout-success",
+  "title": "Checkout with the success test card creates a paid order and empties the cart",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "click", "target": { "automationId": "auth.toggleMode" } },
+    { "action": "waitFor", "target": { "automationId": "auth.displayName" }, "timeoutMs": 10000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "{{run.email}}", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Password123!", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.displayName" }, "text": "{{run.name}}", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "type", "target": { "automationId": "catalog.search" }, "text": "Atlas of Quiet Places", "clear": true },
+    { "action": "click", "target": { "automationId": "catalog.searchButton" } },
+    { "action": "waitFor", "target": { "text": "Atlas of Quiet Places" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "text": "Add to cart" } },
+    { "action": "click", "target": { "automationId": "shell.cartButton" } },
+    { "action": "waitFor", "target": { "automationId": "cart.checkout" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "automationId": "cart.checkout" } },
+    { "action": "waitFor", "target": { "automationId": "checkout.pay" }, "timeoutMs": 10000 },
+    { "action": "type", "target": { "automationId": "checkout.cardNumber" }, "text": "4242 4242 4242 4242", "clear": true },
+    { "action": "click", "target": { "automationId": "checkout.pay" } },
+    { "action": "waitFor", "target": { "automationId": "confirmation.orderNumber" }, "timeoutMs": 20000 },
+    { "action": "assertText", "text": "Payment approved" },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT \"Status\" FROM \"Orders\" WHERE \"UserId\" = (SELECT \"Id\" FROM \"Users\" WHERE \"Email\"='{{run.email}}') ORDER BY \"Id\" DESC LIMIT 1",
+      "expect": "Paid",
+      "description": "Order reaches Paid"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT \"PaymentStatus\" FROM \"Orders\" WHERE \"UserId\" = (SELECT \"Id\" FROM \"Users\" WHERE \"Email\"='{{run.email}}') ORDER BY \"Id\" DESC LIMIT 1",
+      "expect": "Authorized"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"Payments\" p JOIN \"Orders\" o ON o.\"Id\"=p.\"OrderId\" JOIN \"Users\" u ON u.\"Id\"=o.\"UserId\" WHERE u.\"Email\"='{{run.email}}' AND p.\"CardLast4\"='4242'",
+      "expect": "1"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"CartItems\" WHERE \"UserId\" = (SELECT \"Id\" FROM \"Users\" WHERE \"Email\"='{{run.email}}')",
+      "expect": "0",
+      "description": "Cart is cleared after a successful payment"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"OrderStatusHistory\" h JOIN \"Orders\" o ON o.\"Id\"=h.\"OrderId\" JOIN \"Users\" u ON u.\"Id\"=o.\"UserId\" WHERE u.\"Email\"='{{run.email}}'",
+      "expect": "2",
+      "description": "Creation and payment rows are recorded"
+    },
+    { "action": "screenshot", "label": "checkout-success" }
+  ]
+}

@@ -1,0 +1,12 @@
+bin/
+obj/
+artifacts/
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+.env
+.env.local
+TestResults/
+.vscode/mcp.local.json

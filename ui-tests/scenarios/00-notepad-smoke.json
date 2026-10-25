@@ -1,0 +1,48 @@
+{
+  "id": "00-notepad-smoke",
+  "title": "Bootstrap smoke test: proves the Windows-MCP loop before the shop is verified",
+  "description": "Launch Notepad, type a marker, verify it through the accessibility tree, then close the app.",
+  "app": {
+    "exe": "C:\\Windows\\System32\\notepad.exe",
+    "windowTitle": "Notepad"
+  },
+  "preconditions": {
+    "dbReset": false,
+    "seededAdmin": false,
+    "loggedOut": true
+  },
+  "steps": [
+    {
+      "action": "launch",
+      "exe": "C:\\Windows\\System32\\notepad.exe",
+      "description": "Start Notepad through the App tool"
+    },
+    {
+      "action": "waitFor",
+      "window": "Notepad",
+      "timeoutMs": 15000,
+      "description": "Window must appear within 15 seconds"
+    },
+    {
+      "action": "type",
+      "target": { "text": "Text editor" },
+      "text": "gauntlet-smoke",
+      "clear": true,
+      "description": "Type into the editor control"
+    },
+    {
+      "action": "assertText",
+      "text": "gauntlet-smoke",
+      "description": "The marker must be visible in the accessibility tree"
+    },
+    {
+      "action": "screenshot",
+      "label": "notepad-smoke"
+    },
+    {
+      "action": "kill",
+      "process": "notepad",
+      "description": "Close Notepad so the desktop is clean for the next gate"
+    }
+  ]
+}

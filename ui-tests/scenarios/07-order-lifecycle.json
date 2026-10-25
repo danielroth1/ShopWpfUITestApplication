@@ -1,0 +1,57 @@
+{
+  "id": "07-order-lifecycle",
+  "title": "Paid order is cancelled from order history and the payment is refunded",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "click", "target": { "automationId": "auth.toggleMode" } },
+    { "action": "waitFor", "target": { "automationId": "auth.displayName" }, "timeoutMs": 10000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "{{run.email}}", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Password123!", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.displayName" }, "text": "{{run.name}}", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "type", "target": { "automationId": "catalog.search" }, "text": "Echo Microphone", "clear": true },
+    { "action": "click", "target": { "automationId": "catalog.searchButton" } },
+    { "action": "waitFor", "target": { "text": "Echo Microphone" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "text": "Add to cart" } },
+    { "action": "click", "target": { "automationId": "shell.cartButton" } },
+    { "action": "waitFor", "target": { "automationId": "cart.checkout" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "automationId": "cart.checkout" } },
+    { "action": "waitFor", "target": { "automationId": "checkout.pay" }, "timeoutMs": 10000 },
+    { "action": "click", "target": { "automationId": "checkout.pay" } },
+    { "action": "waitFor", "target": { "automationId": "confirmation.viewOrders" }, "timeoutMs": 20000 },
+    { "action": "click", "target": { "automationId": "confirmation.viewOrders" } },
+    { "action": "waitFor", "target": { "automationId": "orders.list" }, "timeoutMs": 10000 },
+    { "action": "assertText", "text": "Paid" },
+    { "action": "click", "target": { "text": "Cancel order" } },
+    { "action": "waitFor", "target": { "text": "Cancelled" }, "timeoutMs": 15000 },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT \"Status\" FROM \"Orders\" WHERE \"UserId\" = (SELECT \"Id\" FROM \"Users\" WHERE \"Email\"='{{run.email}}') ORDER BY \"Id\" DESC LIMIT 1",
+      "expect": "Cancelled"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT \"PaymentStatus\" FROM \"Orders\" WHERE \"UserId\" = (SELECT \"Id\" FROM \"Users\" WHERE \"Email\"='{{run.email}}') ORDER BY \"Id\" DESC LIMIT 1",
+      "expect": "Refunded",
+      "description": "Cancelling a paid order refunds the simulated payment"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT h.\"ToStatus\" FROM \"OrderStatusHistory\" h JOIN \"Orders\" o ON o.\"Id\"=h.\"OrderId\" JOIN \"Users\" u ON u.\"Id\"=o.\"UserId\" WHERE u.\"Email\"='{{run.email}}' ORDER BY h.\"ChangedAt\" DESC, h.\"Id\" DESC LIMIT 1",
+      "expect": "Cancelled",
+      "description": "The transition is recorded in the audit trail"
+    },
+    { "action": "screenshot", "label": "order-cancelled" }
+  ]
+}

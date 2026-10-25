@@ -1,0 +1,51 @@
+{
+  "id": "01-auth-register-login",
+  "title": "Register a new client account, inspect it, sign out and sign back in",
+  "description": "Registration must store the account without admin rights and without email verification.",
+  "app": {
+    "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+    "windowTitle": "ShopTest Shop"
+  },
+  "preconditions": {
+    "dbReset": true,
+    "seededAdmin": true,
+    "loggedOut": true
+  },
+  "steps": [
+    { "action": "launch", "exe": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe" },
+    { "action": "waitFor", "window": "ShopTest Shop", "timeoutMs": 30000 },
+    { "action": "assertText", "text": "Welcome to ShopTest" },
+    { "action": "click", "target": { "automationId": "auth.toggleMode" } },
+    { "action": "waitFor", "target": { "automationId": "auth.displayName" }, "timeoutMs": 10000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "{{run.email}}", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Password123!", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.displayName" }, "text": "{{run.name}}", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "assertText", "text": "{{run.name}}" },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT count(*) FROM \"Users\" WHERE \"Email\" = '{{run.email}}'",
+      "expect": "1",
+      "description": "The account is persisted"
+    },
+    {
+      "action": "sqlAssert",
+      "query": "SELECT \"IsAdmin\" FROM \"Users\" WHERE \"Email\" = '{{run.email}}'",
+      "expect": "f",
+      "description": "Registration must not create an admin"
+    },
+    { "action": "click", "target": { "automationId": "shell.burgerButton" } },
+    { "action": "waitFor", "target": { "automationId": "burger.account" }, "timeoutMs": 5000 },
+    { "action": "click", "target": { "automationId": "burger.account" } },
+    { "action": "waitFor", "target": { "automationId": "account.email" }, "timeoutMs": 10000 },
+    { "action": "assertText", "text": "{{run.email}}" },
+    { "action": "click", "target": { "automationId": "account.signOut" } },
+    { "action": "waitFor", "target": { "automationId": "auth.email" }, "timeoutMs": 10000 },
+    { "action": "type", "target": { "automationId": "auth.email" }, "text": "{{run.email}}", "clear": true },
+    { "action": "type", "target": { "automationId": "auth.password" }, "text": "Password123!", "clear": true },
+    { "action": "click", "target": { "automationId": "auth.submit" } },
+    { "action": "waitFor", "target": { "automationId": "catalog.search" }, "timeoutMs": 20000 },
+    { "action": "screenshot", "label": "auth-signed-in" }
+  ]
+}

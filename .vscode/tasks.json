@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "gauntlet: all gates",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Gate all -Iteration ${input:iteration}",
+      "problemMatcher": []
+    },
+    {
+      "label": "gauntlet: preflight",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Gate preflight",
+      "problemMatcher": []
+    },
+    {
+      "label": "gauntlet: build",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Gate build",
+      "problemMatcher": []
+    },
+    {
+      "label": "gauntlet: database",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Gate database -KeepContainer",
+      "problemMatcher": []
+    },
+    {
+      "label": "gauntlet: tests",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\gauntlet.ps1 -Gate tests -KeepContainer",
+      "problemMatcher": []
+    },
+    {
+      "label": "shop: run app",
+      "type": "shell",
+      "command": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "iteration",
+      "type": "promptString",
+      "description": "Gauntlet iteration number",
+      "default": "1"
+    }
+  ]
+}
