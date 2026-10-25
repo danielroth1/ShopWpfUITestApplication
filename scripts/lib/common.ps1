@@ -107,6 +107,21 @@ function New-GauntletContext {
         ) `
         -Fallback 'git'
 
+    # The muxer resolved above has to win for child processes too: `dotnet ef` shells out to
+    # `<muxer> msbuild`, and that child muxer is looked up on PATH. A second .NET installation
+    # earlier on PATH then hides the SDK requested by global.json.
+    $muxerDir = Split-Path -Parent $dotnet
+    if ($muxerDir -and (Test-Path -LiteralPath $muxerDir)) {
+        $pathEntries = $env:PATH -split ';'
+        $alreadyFirst = $pathEntries.Count -gt 0 -and $pathEntries[0] -eq $muxerDir
+        if (-not $alreadyFirst) {
+            $env:PATH = $muxerDir + ';' + $env:PATH
+        }
+
+        $env:DOTNET_HOST_PATH = $dotnet
+        $env:DOTNET_ROOT = $muxerDir
+    }
+
     $dbHost = Get-EnvOrDefault 'SHOP_DB_HOST' '127.0.0.1'
     $dbPort = Get-EnvOrDefault 'SHOP_DB_PORT' '55432'
     $dbName = Get-EnvOrDefault 'SHOP_DB_NAME' 'shop'
