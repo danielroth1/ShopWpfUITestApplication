@@ -99,6 +99,14 @@ function New-GauntletContext {
         ) `
         -Fallback 'python'
 
+    $git = Resolve-ToolPath `
+        -Explicit $env:SHOP_GIT `
+        -Candidates @(
+            'C:\Program Files\Git\cmd\git.exe',
+            'C:\Program Files (x86)\Git\cmd\git.exe'
+        ) `
+        -Fallback 'git'
+
     $dbHost = Get-EnvOrDefault 'SHOP_DB_HOST' '127.0.0.1'
     $dbPort = Get-EnvOrDefault 'SHOP_DB_PORT' '55432'
     $dbName = Get-EnvOrDefault 'SHOP_DB_NAME' 'shop'
@@ -117,6 +125,9 @@ function New-GauntletContext {
         PodmanPath        = $podman
         WindowsMcpPath    = $windowsMcp
         PythonPath        = $python
+        GitPath           = $git
+        CommitEnabled     = $true
+        GitInfo           = $null
         ContainerName     = Get-EnvOrDefault 'SHOP_PG_CONTAINER' 'shop-pg'
         Image             = Get-EnvOrDefault 'SHOP_PG_IMAGE' 'postgres:17-alpine'
         DbHost            = $dbHost
@@ -239,11 +250,17 @@ function Save-GauntletReport {
 
     $failed = @($Context.GateResults | Where-Object { $_.status -ne 'pass' })
 
+    $gitInfo = $null
+    if ($null -ne $Context.GitInfo) {
+        $gitInfo = [pscustomobject]$Context.GitInfo
+    }
+
     $report = [pscustomobject]@{
         iteration  = $Context.Iteration
         startedAt  = $StartedAt.ToString('o')
         finishedAt = (Get-Date).ToString('o')
         result     = $(if ($failed.Count -eq 0) { 'pass' } else { 'fail' })
+        git        = $gitInfo
         gates      = @($Context.GateResults)
     }
 

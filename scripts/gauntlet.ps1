@@ -13,6 +13,10 @@
 
 .EXAMPLE
     .\scripts\gauntlet.ps1 -Gate tests -KeepContainer
+
+.EXAMPLE
+    .\scripts\gauntlet.ps1 -Rollback
+    Discards the current working tree and returns to the last green checkpoint.
 #>
 [CmdletBinding()]
 param(
@@ -23,7 +27,13 @@ param(
 
     [switch]$KeepContainer,
 
-    [switch]$StopContainer
+    [switch]$StopContainer,
+
+    [switch]$NoCommit,
+
+    [switch]$Rollback,
+
+    [string]$RollbackTo
 )
 
 Set-StrictMode -Version Latest
@@ -34,6 +44,7 @@ $repoRoot = Split-Path -Parent $scriptRoot
 
 . (Join-Path $scriptRoot 'lib\common.ps1')
 . (Join-Path $scriptRoot 'lib\podman.ps1')
+. (Join-Path $scriptRoot 'lib\git.ps1')
 . (Join-Path $scriptRoot 'gates\00-preflight.ps1')
 . (Join-Path $scriptRoot 'gates\10-build.ps1')
 . (Join-Path $scriptRoot 'gates\20-database.ps1')
@@ -45,12 +56,49 @@ Import-DotEnv (Join-Path $repoRoot '.env')
 $context = New-GauntletContext -Root $repoRoot -Iteration $Iteration
 $context.KeepContainer = [bool]$KeepContainer
 $context.StopContainer = [bool]$StopContainer
+$context.CommitEnabled = (-not $NoCommit)
+
+if ($Rollback -or $RollbackTo) {
+    Initialize-GitRepository -Context $context
+    Ensure-GitIdentity -Context $context
+
+    $target = $RollbackTo
+    if ([string]::IsNullOrWhiteSpace($target)) {
+        $target = Get-LatestGreenTag -Context $context
+    }
+
+    if ([string]::IsNullOrWhiteSpace($target)) {
+        throw 'No green checkpoint exists yet. Pass -RollbackTo <tag-or-commit>.'
+    }
+
+    $sha = Restore-GitCheckpoint -Context $context -Ref $target
+    Write-Host ''
+    Write-Host ("Rolled back to '{0}' ({1})" -f $target, (Get-GitShortSha -Sha $sha)) -ForegroundColor Green
+    Write-Host 'Artifacts under artifacts\gauntlet were kept (ignored by git).' -ForegroundColor DarkGray
+    exit 0
+}
 
 Write-Host ''
 Write-Host ("ShopTest gauntlet - iteration {0} - gate '{1}'" -f $Iteration, $Gate) -ForegroundColor White
 Write-Host ("Artifacts: {0}" -f $context.IterationDir) -ForegroundColor DarkGray
 
 $startedAt = Get-Date
+
+$commitLoop = ($Gate -eq 'all' -and $context.CommitEnabled)
+$baseline = $null
+$baselineTag = "gauntlet/iter-{0}-start" -f $Iteration
+
+if ($commitLoop) {
+    $baseline = New-GitCheckpoint -Context $context -Message ("gauntlet: iteration {0} baseline" -f $Iteration)
+    Set-GitCheckpointTag -Context $context -Tag $baselineTag -Sha $baseline.Sha -Message ("Gauntlet iteration {0} starting point" -f $Iteration)
+
+    $baselineNote = 'working tree already clean'
+    if ($baseline.Committed) {
+        $baselineNote = 'uncommitted work captured'
+    }
+
+    Write-Host ("Checkpoint: {0} at {1} ({2})" -f $baselineTag, (Get-GitShortSha -Sha $baseline.Sha), $baselineNote) -ForegroundColor DarkGray
+}
 
 $allGates = @(
     [pscustomobject]@{
@@ -105,6 +153,34 @@ if ($failed -and $Gate -eq 'all') {
     Invoke-GauntletGate -Context $context -Id $cleanup.Id -Title $cleanup.Title -Body $cleanup.Action | Out-Null
 }
 
+$failedGate = $context.GateResults | Where-Object { $_.status -ne 'pass' } | Select-Object -First 1
+$allPassed = ($null -eq $failedGate)
+
+if ($commitLoop) {
+    if ($allPassed) {
+        $resultTag = "gauntlet/iter-{0}-green" -f $Iteration
+        $result = New-GitCheckpoint -Context $context -Message ("gauntlet: iteration {0} green" -f $Iteration)
+    }
+    else {
+        $resultTag = "gauntlet/iter-{0}-failed" -f $Iteration
+        $result = New-GitCheckpoint -Context $context -Message ("gauntlet: iteration {0} failed ({1})" -f $Iteration, $failedGate.id)
+    }
+
+    Set-GitCheckpointTag -Context $context -Tag $resultTag -Sha $result.Sha -Message ("Gauntlet iteration {0}: {1}" -f $Iteration, $(if ($allPassed) { 'green' } else { 'failed' }))
+
+    $context.GitInfo = @{
+        enabled      = $true
+        baseline     = $baseline.Sha
+        baselineTag  = $baselineTag
+        result       = $result.Sha
+        resultTag    = $resultTag
+        resultStatus = $(if ($allPassed) { 'green' } else { 'failed' })
+        committed    = $result.Committed
+    }
+
+    Write-Host ("Checkpoint: {0} at {1}" -f $resultTag, (Get-GitShortSha -Sha $result.Sha)) -ForegroundColor DarkGray
+}
+
 $passed = Save-GauntletReport -Context $context -StartedAt $startedAt
 
 if ($Gate -ne 'cleanup') {
@@ -113,6 +189,13 @@ if ($Gate -ne 'cleanup') {
 }
 
 if (-not $passed) {
+    Write-Host ''
+    Write-Host ("Discard this iteration: scripts\gauntlet.ps1 -Rollback -Iteration {0}" -f $Iteration) -ForegroundColor Yellow
+
+    if ($commitLoop) {
+        Write-Host ("Inspect what was tried:  {0} show {1}" -f $context.GitPath, (Get-GitShortSha -Sha $context.GitInfo.result)) -ForegroundColor DarkGray
+    }
+
     exit 1
 }
 
