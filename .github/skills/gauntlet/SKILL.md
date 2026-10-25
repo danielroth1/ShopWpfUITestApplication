@@ -1,8 +1,8 @@
 ---
-agent: agent
+name: gauntlet
 description: "Run the ShopTest gauntlet loop until every gate and UI scenario is green"
+disable-model-invocation: true
 ---
-
 Run the ShopTest gauntlet loop.
 
 Goal: ${input:goal:walking skeleton green}

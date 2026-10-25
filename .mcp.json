@@ -1,0 +1,14 @@
+{
+	"mcpServers": {
+		"windowsMcp": {
+			"type": "http",
+			"url": "http://127.0.0.1:8000/mcp",
+			"tools": [
+				"*"
+			],
+			"headers": {
+				"Authorization": "Bearer ${WINDOWS_MCP_AUTH_KEY}"
+			}
+		}
+	}
+}
