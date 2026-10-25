@@ -4,6 +4,27 @@ Initial inventory of the shell and every AutomationId a scenario may target. The
 discovery pass (G4) refreshes this file from a live `Snapshot`; treat code and map as both needing to
 agree.
 
+## Discovery status
+
+Verified live on 2026-10-25 (gauntlet iteration 5, run id `20261025-1020-s*`): every id below was
+observed in the running app while replaying `ui-tests/scenarios/01..08`. No id was missing or renamed.
+
+Observed details worth knowing when writing scenarios:
+
+- The shell header only exposes `shell.cartButton` and `shell.burgerButton` while signed in; the cart
+  button text is `Cart` when empty and `Cart (n)` otherwise.
+- `auth.displayName` exists only in register mode (after `auth.toggleMode`); toggle back with the same
+  button, whose text changes between `Create a new account` and `I already have an account`.
+- The shell window is clamped to the system work area on load (`MainWindow.FitToWorkArea`). Before that
+  fix the 1320x860 default window was centered off-screen at 150% scaling and the whole header sat at
+  negative Y, unreachable by mouse or UIA.
+- Catalog items expose `item.{id}.add` / `item.{id}.save`; the list renders every card, so a scenario
+  should search first and then use the name text instead of the id when the seed id is unknown.
+- `cart.status` carries the last verb result (`Balance Mat removed.`), `saved.status` likewise.
+- Admin rows are keyed by order id (`admin.order.{id}.next` is a `ComboBox`, `admin.order.{id}.apply`
+  the commit button), and `admin.status` reports seeding (`Catalog already seeded.`) or adds.
+- Checkout keeps defaults for address/holder/expiry/cvc; typing only `checkout.cardNumber` is enough.
+
 ## Shell (`MainWindow`)
 
 | AutomationId         | Control | Notes                                    |
