@@ -33,8 +33,8 @@ internal static class OfflineUiGraph
 
         // Categories are deliberately left empty: a Selector auto-selects its first item, which would fire
         // the category-changed handler and try to reload from the database.
-        model.Items.Add(Item(1, "Fountain pen"));
-        model.Items.Add(Item(2, "Ink bottle"));
+        model.Items.Add(new CatalogItemViewModel(Item(1, "Fountain pen")));
+        model.Items.Add(new CatalogItemViewModel(Item(2, "Ink bottle")));
         return model;
     }
 

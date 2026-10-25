@@ -45,7 +45,7 @@ public sealed partial class CatalogViewModel : ViewModelBase
 
     public ObservableCollection<CategoryDto> Categories { get; } = new();
 
-    public ObservableCollection<ItemDto> Items { get; } = new();
+    public ObservableCollection<CatalogItemViewModel> Items { get; } = new();
 
     partial void OnSelectedCategoryChanged(CategoryDto? value)
     {
@@ -84,7 +84,7 @@ public sealed partial class CatalogViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task AddToCartAsync(ItemDto? item)
+    private async Task AddToCartAsync(CatalogItemViewModel? item)
     {
         if (item is null || !_session.IsAuthenticated)
         {
@@ -104,7 +104,7 @@ public sealed partial class CatalogViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task SaveItemAsync(ItemDto? item)
+    private async Task SaveItemAsync(CatalogItemViewModel? item)
     {
         if (item is null || !_session.IsAuthenticated)
         {
@@ -114,6 +114,7 @@ public sealed partial class CatalogViewModel : ViewModelBase
         try
         {
             var saved = await _saved.ToggleAsync(_session.UserId, item.Id);
+            item.IsSaved = saved;
             StatusMessage = saved
                 ? $"{item.Name} saved for later."
                 : $"{item.Name} removed from saved items.";
@@ -136,10 +137,14 @@ public sealed partial class CatalogViewModel : ViewModelBase
             var categoryId = SelectedCategory is { Id: > 0 } ? SelectedCategory.Id : (int?)null;
             var results = await _catalog.SearchAsync(SearchText, categoryId);
 
+            var savedIds = _session.IsAuthenticated
+                ? (await _saved.ListAsync(_session.UserId)).Select(saved => saved.Id).ToHashSet()
+                : [];
+
             Items.Clear();
             foreach (var item in results)
             {
-                Items.Add(item);
+                Items.Add(new CatalogItemViewModel(item) { IsSaved = savedIds.Contains(item.Id) });
             }
 
             StatusMessage = results.Count == 0

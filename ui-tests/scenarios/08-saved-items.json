@@ -20,7 +20,7 @@
     { "action": "type", "target": { "automationId": "catalog.search" }, "text": "Climb Chalk Bag", "clear": true },
     { "action": "click", "target": { "automationId": "catalog.searchButton" } },
     { "action": "waitFor", "target": { "text": "Climb Chalk Bag" }, "timeoutMs": 10000 },
-    { "action": "click", "target": { "text": "Save" } },
+    { "action": "click", "target": { "text": "Save for later" } },
     { "action": "waitFor", "target": { "text": "saved for later" }, "timeoutMs": 10000 },
     {
       "action": "sqlAssert",

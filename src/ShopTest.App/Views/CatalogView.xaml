@@ -83,36 +83,74 @@
                                     Width="280"
                                     Margin="0,0,16,16">
                                 <StackPanel>
-                                    <TextBlock Text="{Binding Name}"
-                                               FontWeight="SemiBold"
-                                               FontSize="15"
-                                               TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding Category}"
-                                               Style="{StaticResource Muted}"
-                                               Margin="0,2,0,8"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="15"
+                                                       TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Category}"
+                                                       Style="{StaticResource Muted}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Command="{Binding DataContext.SaveItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                VerticalAlignment="Top"
+                                                Margin="8,-4,-6,0"
+                                                AutomationProperties.AutomationId="{Binding Id, StringFormat=item.{0}.save}">
+                                            <Button.Style>
+                                                <Style TargetType="Button"
+                                                       BasedOn="{StaticResource StarButton}">
+                                                    <Setter Property="Content"
+                                                            Value="&#x2606;"/>
+                                                    <Setter Property="Foreground"
+                                                            Value="{StaticResource Brush.Muted}"/>
+                                                    <Setter Property="ToolTip"
+                                                            Value="Save for later"/>
+                                                    <Setter Property="AutomationProperties.Name"
+                                                            Value="Save for later"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSaved}"
+                                                                     Value="True">
+                                                            <Setter Property="Content"
+                                                                    Value="&#x2605;"/>
+                                                            <Setter Property="Foreground"
+                                                                    Value="{StaticResource Brush.Star}"/>
+                                                            <Setter Property="ToolTip"
+                                                                    Value="Remove from saved items"/>
+                                                            <Setter Property="AutomationProperties.Name"
+                                                                    Value="Saved for later"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+
                                     <TextBlock Text="{Binding Description}"
                                                TextWrapping="Wrap"
                                                Height="46"
                                                FontSize="12"
+                                               Margin="0,8,0,0"
                                                Foreground="{StaticResource Brush.Muted}"/>
                                     <TextBlock Text="{Binding Price, StringFormat={}{0:C}}"
                                                FontSize="18"
                                                FontWeight="SemiBold"
                                                Margin="0,8,0,10"/>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Content="Add to cart"
-                                                Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource PrimaryButton}"
-                                                Padding="12,6"
-                                                AutomationProperties.AutomationId="{Binding Id, StringFormat=item.{0}.add}"/>
-                                        <Button Content="Save"
-                                                Command="{Binding DataContext.SaveItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Margin="8,0,0,0"
-                                                AutomationProperties.AutomationId="{Binding Id, StringFormat=item.{0}.save}"/>
-                                    </StackPanel>
+                                    <Button Content="Add to cart"
+                                            Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Padding="12,6"
+                                            HorizontalAlignment="Left"
+                                            AutomationProperties.AutomationId="{Binding Id, StringFormat=item.{0}.add}"/>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

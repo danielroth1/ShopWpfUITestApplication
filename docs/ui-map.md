@@ -18,8 +18,10 @@ Observed details worth knowing when writing scenarios:
 - The shell window is clamped to the system work area on load (`MainWindow.FitToWorkArea`). Before that
   fix the 1320x860 default window was centered off-screen at 150% scaling and the whole header sat at
   negative Y, unreachable by mouse or UIA.
-- Catalog items expose `item.{id}.add` / `item.{id}.save`; the list renders every card, so a scenario
-  should search first and then use the name text instead of the id when the seed id is unknown.
+- Catalog items expose `item.{id}.add` / `item.{id}.save`; `item.{id}.save` is the star button in the
+  top-right of each card, named `Save for later` (`Saved for later` once filled). The list renders every
+  card, so a scenario should search first and then use the name text instead of the id when the seed id
+  is unknown.
 - `cart.status` carries the last verb result (`Balance Mat removed.`), `saved.status` likewise.
 - Admin rows are keyed by order id (`admin.order.{id}.next` is a `ComboBox`, `admin.order.{id}.apply`
   the commit button), and `admin.status` reports seeding (`Catalog already seeded.`) or adds.

@@ -23,6 +23,8 @@
                 Color="#1A7F37"/>
         <SolidColorBrush x:Key="Brush.Danger"
                 Color="#B42318"/>
+        <SolidColorBrush x:Key="Brush.Star"
+                Color="#D4A017"/>
 
         <Style x:Key="Heading"
                 TargetType="TextBlock">
@@ -144,6 +146,24 @@
                     Value="10,2"/>
             <Setter Property="Cursor"
                     Value="Hand"/>
+        </Style>
+
+        <Style x:Key="StarButton"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource Brush.Muted}"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="FontSize"
+                    Value="20"/>
+            <Setter Property="Padding"
+                    Value="4,0"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="FocusVisualStyle"
+                    Value="{x:Null}"/>
         </Style>
 
         <Style x:Key="InputBox"

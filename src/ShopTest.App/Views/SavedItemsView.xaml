@@ -14,7 +14,7 @@
                    AutomationProperties.AutomationId="saved.status"/>
 
         <TextBlock DockPanel.Dock="Top"
-                   Text="Nothing saved yet. Use the Save button on a catalog item."
+                   Text="Nothing saved yet. Use the star on a catalog item."
                    Style="{StaticResource Muted}"
                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"
                    AutomationProperties.AutomationId="saved.empty"/>
