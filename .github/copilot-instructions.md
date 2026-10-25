@@ -16,6 +16,7 @@ running in a throwaway Podman container. There is no separate backend and no HTT
 
 ## Conventions
 
+- .NET 10 SDK is installed system-wide (`dotnet` on `PATH`); do not add `DOTNET_ROOT`/`SHOP_DOTNET` workarounds.
 - Target framework `net10.0-windows`, nullable enabled, warnings are errors.
 - Services take `IDbContextFactory<ShopDbContext>` and create short-lived contexts; never hold a context.
 - Business-rule violations throw `ShopException`; the UI shows `ex.Message`.
@@ -29,10 +30,17 @@ running in a throwaway Podman container. There is no separate backend and no HTT
 
 - Full gate run: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\gauntlet.ps1 -Gate all -Iteration 1`
 - Build only: `scripts\gauntlet.ps1 -Gate build`
-- Database only: `scripts\gauntlet.ps1 -Gate database -KeepContainer`
+- Clean bin/obj after an interrupted build (WPF `BG1002` .baml errors): `scripts\tools\shop-clean.ps1`
+- Start/stop the database container (no gauntlet): `scripts\tools\shop-db.ps1 -Action start|stop`
+  (VS Code tasks `shop: db start` / `shop: db stop`)
+- Recreate the database for a fresh gauntlet run: `scripts\gauntlet.ps1 -Gate database`
 - Tests only: `scripts\gauntlet.ps1 -Gate tests -KeepContainer`
 - Roll back to the last green checkpoint: `scripts\gauntlet.ps1 -Rollback`
-- Run the app: `src\ShopTest.App\bin\Debug\net10.0-windows\ShopTest.App.exe`
+- Run the app (migrates and seeds on startup; the database container must be running):
+  `dotnet run --project src\ShopTest.App`
+- Run an existing build: `src\ShopTest.App\bin\Debug\net10.0-windows\ShopTest.App.exe`
+- Debug in VS Code: `F5` with a configuration from `.vscode/launch.json` (`ShopTest.App`,
+  `ShopTest.App (attach)`, `ShopTest.IntegrationTests`)
 
 ## Seed accounts
 

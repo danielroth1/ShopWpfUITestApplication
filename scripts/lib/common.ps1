@@ -70,57 +70,42 @@ function New-GauntletContext {
     $iterationDir = Join-Path $artifactsRoot ("iter-{0}" -f $Iteration)
     New-Item -ItemType Directory -Force -Path $iterationDir | Out-Null
 
+    # .NET 10 is installed system-wide; SHOP_DOTNET can still point at a specific muxer.
     $dotnet = Resolve-ToolPath `
         -Explicit $env:SHOP_DOTNET `
         -Candidates @(
-            'C:\Users\daniel\.dotnet10\dotnet.exe',
-            'C:\Program Files\dotnet\dotnet.exe'
-        ) `
+        'C:\Program Files\dotnet\dotnet.exe'
+    ) `
         -Fallback 'dotnet'
 
     $podman = Resolve-ToolPath `
         -Explicit $env:SHOP_PODMAN `
         -Candidates @(
-            'C:\Users\daniel\AppData\Local\Programs\Podman\podman.exe'
-        ) `
+        'C:\Users\daniel\AppData\Local\Programs\Podman\podman.exe'
+    ) `
         -Fallback 'podman'
 
     $windowsMcp = Resolve-ToolPath `
         -Explicit $env:SHOP_WINDOWS_MCP `
         -Candidates @(
-            'C:\Users\daniel\AppData\Local\Programs\Python\Python315\Scripts\windows-mcp.exe'
-        ) `
+        'C:\Users\daniel\AppData\Local\Programs\Python\Python315\Scripts\windows-mcp.exe'
+    ) `
         -Fallback 'windows-mcp'
 
     $python = Resolve-ToolPath `
         -Explicit $env:SHOP_PYTHON `
         -Candidates @(
-            'C:\Users\daniel\AppData\Local\Programs\Python\Python315\python.exe'
-        ) `
+        'C:\Users\daniel\AppData\Local\Programs\Python\Python315\python.exe'
+    ) `
         -Fallback 'python'
 
     $git = Resolve-ToolPath `
         -Explicit $env:SHOP_GIT `
         -Candidates @(
-            'C:\Program Files\Git\cmd\git.exe',
-            'C:\Program Files (x86)\Git\cmd\git.exe'
-        ) `
+        'C:\Program Files\Git\cmd\git.exe',
+        'C:\Program Files (x86)\Git\cmd\git.exe'
+    ) `
         -Fallback 'git'
-
-    # The muxer resolved above has to win for child processes too: `dotnet ef` shells out to
-    # `<muxer> msbuild`, and that child muxer is looked up on PATH. A second .NET installation
-    # earlier on PATH then hides the SDK requested by global.json.
-    $muxerDir = Split-Path -Parent $dotnet
-    if ($muxerDir -and (Test-Path -LiteralPath $muxerDir)) {
-        $pathEntries = $env:PATH -split ';'
-        $alreadyFirst = $pathEntries.Count -gt 0 -and $pathEntries[0] -eq $muxerDir
-        if (-not $alreadyFirst) {
-            $env:PATH = $muxerDir + ';' + $env:PATH
-        }
-
-        $env:DOTNET_HOST_PATH = $dotnet
-        $env:DOTNET_ROOT = $muxerDir
-    }
 
     $dbHost = Get-EnvOrDefault 'SHOP_DB_HOST' '127.0.0.1'
     $dbPort = Get-EnvOrDefault 'SHOP_DB_PORT' '55432'
@@ -131,31 +116,31 @@ function New-GauntletContext {
     $connectionString = Get-EnvOrDefault 'SHOP_DB_CONNECTION' ("Host={0};Port={1};Database={2};Username={3};Password={4};Include Error Detail=true" -f $dbHost, $dbPort, $dbName, $dbUser, $dbPassword)
 
     return @{
-        Root              = $Root
-        Iteration         = $Iteration
-        ArtifactsRoot     = $artifactsRoot
-        IterationDir      = $iterationDir
-        ReportPath        = Join-Path $iterationDir 'report.json'
-        DotnetPath        = $dotnet
-        PodmanPath        = $podman
-        WindowsMcpPath    = $windowsMcp
-        PythonPath        = $python
-        GitPath           = $git
-        CommitEnabled     = $true
-        GitInfo           = $null
-        ContainerName     = Get-EnvOrDefault 'SHOP_PG_CONTAINER' 'shop-pg'
-        Image             = Get-EnvOrDefault 'SHOP_PG_IMAGE' 'postgres:17-alpine'
-        DbHost            = $dbHost
-        DbPort            = $dbPort
-        DbName            = $dbName
-        DbUser            = $dbUser
-        DbPassword        = $dbPassword
-        ConnectionString  = $connectionString
-        McpUrl            = Get-EnvOrDefault 'WINDOWS_MCP_URL' 'http://127.0.0.1:8000/mcp'
-        AppExe            = Join-Path $Root 'src\ShopTest.App\bin\Debug\net10.0-windows\ShopTest.App.exe'
-        GateResults       = @()
-        KeepContainer     = $false
-        StopContainer     = $false
+        Root             = $Root
+        Iteration        = $Iteration
+        ArtifactsRoot    = $artifactsRoot
+        IterationDir     = $iterationDir
+        ReportPath       = Join-Path $iterationDir 'report.json'
+        DotnetPath       = $dotnet
+        PodmanPath       = $podman
+        WindowsMcpPath   = $windowsMcp
+        PythonPath       = $python
+        GitPath          = $git
+        CommitEnabled    = $true
+        GitInfo          = $null
+        ContainerName    = Get-EnvOrDefault 'SHOP_PG_CONTAINER' 'shop-pg'
+        Image            = Get-EnvOrDefault 'SHOP_PG_IMAGE' 'postgres:17-alpine'
+        DbHost           = $dbHost
+        DbPort           = $dbPort
+        DbName           = $dbName
+        DbUser           = $dbUser
+        DbPassword       = $dbPassword
+        ConnectionString = $connectionString
+        McpUrl           = Get-EnvOrDefault 'WINDOWS_MCP_URL' 'http://127.0.0.1:8000/mcp'
+        AppExe           = Join-Path $Root 'src\ShopTest.App\bin\Debug\net10.0-windows\ShopTest.App.exe'
+        GateResults      = @()
+        KeepContainer    = $false
+        StopContainer    = $false
     }
 }
 

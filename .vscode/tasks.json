@@ -38,6 +38,55 @@
             "problemMatcher": []
         },
         {
+            "label": "shop: db start",
+            "type": "shell",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\tools\\shop-db.ps1 -Action start",
+            "problemMatcher": []
+        },
+        {
+            "label": "shop: db stop",
+            "type": "shell",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\tools\\shop-db.ps1 -Action stop",
+            "problemMatcher": []
+        },
+        {
+            "label": "shop: build",
+            "type": "shell",
+            "command": "dotnet build ShopTest.slnx",
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "shop: rebuild",
+            "type": "shell",
+            "command": "dotnet build ShopTest.slnx --no-incremental",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "shop: clean",
+            "type": "shell",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\tools\\shop-clean.ps1",
+            "problemMatcher": []
+        },
+        {
+            "label": "shop: prepare",
+            "dependsOn": [
+                "shop: db start",
+                "shop: build"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "shop: run app (dotnet run)",
+            "type": "shell",
+            "command": "dotnet run --project src\\ShopTest.App",
+            "problemMatcher": []
+        },
+        {
             "label": "shop: run app",
             "type": "shell",
             "command": "src\\ShopTest.App\\bin\\Debug\\net10.0-windows\\ShopTest.App.exe",

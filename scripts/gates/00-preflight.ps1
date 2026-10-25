@@ -25,8 +25,8 @@ function Invoke-GatePreflight {
         [void]$summary.Add("dotnet-ef $efVersion")
     }
 
-    # `dotnet ef` shells out to `<muxer> msbuild`, resolved from PATH, so the SDK named by
-    # global.json must resolve for a child muxer and not just for the resolved dotnet path.
+    # `dotnet ef` shells out to `<muxer> msbuild`, so the SDK named by global.json must resolve for
+    # child processes and not just for the resolved dotnet path.
     Push-Location $Context.Root
     try {
         $sdkProbe = (& $Context.DotnetPath msbuild -version 2>&1) -join ' '
@@ -38,7 +38,7 @@ function Invoke-GatePreflight {
 
     if ($sdkProbeExit -ne 0) {
         $sdkProbe = ($sdkProbe -replace '\s+', ' ').Trim()
-        [void]$problems.Add("no SDK resolves for global.json in '$($Context.Root)' (put the .NET 10 install first on PATH, or set SHOP_DOTNET): $sdkProbe")
+        [void]$problems.Add("no SDK resolves for global.json in '$($Context.Root)' (install the .NET 10 SDK, or set SHOP_DOTNET): $sdkProbe")
     }
 
     if (-not (Test-Path -LiteralPath $Context.PodmanPath)) {

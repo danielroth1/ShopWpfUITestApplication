@@ -13,6 +13,15 @@ result or a UI assertion captured through Windows-MCP.
 Take the goal supplied in the prompt (for example "walking skeleton green") and drive it to a green
 gauntlet run, or stop after 3 iterations with a precise failure report.
 
+## Toolchain
+
+- The .NET 10 SDK is installed system-wide and `dotnet` is on `PATH`; `global.json` resolves against it.
+  Do not set `DOTNET_ROOT`, `DOTNET_HOST_PATH`, `SHOP_DOTNET`, or reorder `PATH` to work around a
+  second SDK. If an SDK problem is suspected, run `scripts\gauntlet.ps1 -Gate preflight` and report its
+  output instead of inventing an environment fix.
+- Launch the app for UI gates with `dotnet run --project src\ShopTest.App` or
+  `src\ShopTest.App\bin\Debug\net10.0-windows\ShopTest.App.exe` after the database gate has run.
+
 ## Loop protocol
 
 For each iteration `n` in 1..3:

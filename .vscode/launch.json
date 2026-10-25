@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ShopTest.App",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "shop: prepare",
+            "program": "${workspaceFolder}/src/ShopTest.App/bin/Debug/net10.0-windows/ShopTest.App.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/ShopTest.App/bin/Debug/net10.0-windows",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "justMyCode": true
+        },
+        {
+            "name": "ShopTest.App (attach)",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "ShopTest.App.exe"
+        },
+        {
+            "name": "ShopTest.IntegrationTests",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/tests/ShopTest.IntegrationTests/ShopTest.IntegrationTests.csproj"
+        }
+    ]
+}
